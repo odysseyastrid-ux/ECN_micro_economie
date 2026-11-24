@@ -1,0 +1,1438 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ECN1463 – Cahier de révision</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ---------- Tokens : papier millimétré, encre marine, courbes d'offre et de demande ---------- */
+:root{
+  --paper:#eef2f8; --grid:#d6deea; --sheet:#ffffff; --ink:#101b34; --muted:#56627c;
+  --demand:#2447f5; --demand-soft:#dfe5ff;
+  --supply:#ff7a1a; --supply-soft:#ffe9d6;
+  --ok:#12936b; --ok-soft:#d9f4ea; --bad:#d93a56; --bad-soft:#fde0e5; --hl:#fff1a8;
+  --shadow:#101b34;
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --paper:#0d1424; --grid:#1a2338; --sheet:#151e33; --ink:#eaf0ff; --muted:#9aa7c4;
+    --demand:#7d95ff; --demand-soft:#1d2a66; --supply:#ff9a4d; --supply-soft:#43290f;
+    --ok:#3fd6a3; --ok-soft:#10392c; --bad:#ff6b85; --bad-soft:#431a25; --hl:#4a4217; --shadow:#000; }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+body{margin:0;color:var(--ink);font:18px/1.65 var(--body);background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px}
+:focus-visible{outline:3px solid var(--demand);outline-offset:3px;border-radius:6px}
+
+/* ---------- Typo ---------- */
+h1,h2,h3{font-family:var(--display);line-height:1.1;margin:0}
+h1{font-size:clamp(2.2rem,6vw,3.6rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(1.55rem,3.4vw,2.1rem);font-weight:800;letter-spacing:-.01em}
+h3{font-size:1.15rem;font-weight:800;margin-bottom:.25rem}
+.eyebrow{font:600 .74rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+mark{background:var(--hl);color:inherit;padding:0 .2em;border-radius:3px}
+p{margin:.6em 0}
+
+/* ---------- Mise en page ---------- */
+.wrap{max-width:900px;margin:0 auto;padding:0 18px}
+header.hero{padding:44px 0 18px}
+.hero-grid{display:grid;gap:26px;grid-template-columns:1.05fr 1fr;align-items:center}
+@media(max-width:760px){.hero-grid{grid-template-columns:1fr}}
+.hero p.lead{font-size:1.12rem;color:var(--muted);max-width:34ch}
+.hero-grid>*{min-width:0}
+.range{max-width:100%}
+details.ex{background:var(--supply-soft);border-color:var(--supply);box-shadow:5px 5px 0 var(--supply)}
+details.ex>summary::after{color:var(--supply)}
+details.ex>summary::before{content:"Exemples concrets";display:none}
+details.ex li{margin:.5em 0}
+details.ex .who{font-family:var(--mono);font-weight:600;font-size:.86rem;color:var(--supply)}
+
+.sheet{background:var(--sheet);border:2px solid var(--ink);border-radius:12px;box-shadow:5px 5px 0 var(--shadow);padding:18px 20px;margin:16px 0}
+.sheet.flat{box-shadow:none}
+.key{background:var(--demand-soft);border-color:var(--demand);box-shadow:5px 5px 0 var(--demand)}
+.warn{background:var(--supply-soft);border-color:var(--supply);box-shadow:5px 5px 0 var(--supply)}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.grid .sheet{margin:6px 0}
+
+/* ---------- Onglets ---------- */
+.tabs{position:sticky;top:0;z-index:10;background:var(--paper);border-bottom:2px solid var(--ink)}
+.tabs .in{display:flex;gap:8px;padding:10px 18px;max-width:900px;margin:0 auto}
+.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 6px;font-weight:700}
+.tabs button small{font:600 .68rem var(--mono);opacity:.75}
+.tabs button.on{background:var(--ink);color:var(--paper)}
+.tab{display:none;padding-bottom:70px}
+.tab.on{display:block}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:16px 0 8px;scrollbar-width:thin}
+.chips a{white-space:nowrap;text-decoration:none;color:var(--ink);background:var(--sheet);border:2px solid var(--ink);padding:5px 12px;border-radius:999px;font-size:.88rem;font-weight:700}
+.chips a:hover{background:var(--hl)}
+.chips a.done{background:var(--ok-soft);border-color:var(--ok)}
+.chips a.done::after{content:" ✓"}
+
+section{margin-top:44px;scroll-margin-top:84px}
+section>.eyebrow{display:block;margin-bottom:8px}
+.sec-done{margin-top:18px}
+
+/* ---------- Composants ---------- */
+table{width:100%;border-collapse:separate;border-spacing:0;background:var(--sheet);border:2px solid var(--ink);border-radius:12px;overflow:hidden;font-size:.97rem}
+td,th{padding:10px 12px;text-align:left;border-bottom:1px solid var(--grid);vertical-align:top}
+th{background:var(--ink);color:var(--paper);font:600 .76rem var(--mono);letter-spacing:.05em;text-transform:uppercase}
+tr:last-child td{border-bottom:0}
+.scroll-x{overflow-x:auto;margin:12px 0}
+.scroll-x table{min-width:560px}
+details{background:var(--sheet);border:2px solid var(--ink);border-radius:12px;margin:12px 0}
+summary{cursor:pointer;padding:13px 18px;font-weight:700;list-style:none;font-family:var(--display);font-size:1.05rem}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";float:right;font:600 1.2rem var(--mono);color:var(--demand)}
+details[open]>summary::after{content:"−"}
+details[open]>summary{border-bottom:2px dashed var(--grid)}
+details .body{padding:6px 18px 16px}
+details.more{border-style:dashed;box-shadow:none;background:transparent}
+ul,ol{padding-left:1.25em;margin:.5em 0}
+li{margin:.25em 0}
+button{font:inherit;cursor:pointer;color:var(--ink);background:var(--sheet);border:2px solid var(--ink);padding:9px 15px;border-radius:10px;font-weight:700;transition:transform .08s,box-shadow .08s}
+button:hover{box-shadow:3px 3px 0 var(--shadow);transform:translate(-1px,-1px)}
+button:active{transform:none;box-shadow:none}
+button.primary{background:var(--demand);color:#fff;border-color:var(--demand)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-block;font:600 .72rem var(--mono);padding:3px 9px;border-radius:999px;background:var(--demand-soft);color:var(--demand);border:1.5px solid var(--demand);vertical-align:middle}
+.pill.o{background:var(--supply-soft);color:var(--supply);border-color:var(--supply)}
+.pill.g{background:var(--ok-soft);color:var(--ok);border-color:var(--ok)}
+.timeline{list-style:none;padding:0;margin:14px 0;border-left:3px solid var(--ink)}
+.timeline li{position:relative;padding:4px 0 14px 20px;margin:0}
+.timeline li::before{content:"";position:absolute;left:-9px;top:10px;width:15px;height:15px;border-radius:50%;background:var(--supply);border:2px solid var(--ink)}
+.timeline b{font-family:var(--mono)}
+
+/* cartes & quiz */
+.flash{min-height:170px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:1.15rem;cursor:pointer;user-select:none;margin-top:0}
+.hint{display:block;font:400 .78rem var(--mono);color:var(--muted);margin-top:10px}
+.opt{display:block;width:100%;text-align:left;margin:9px 0;font-weight:400}
+.opt.right{background:var(--ok-soft);border-color:var(--ok)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.why{margin-top:12px;padding:11px 15px;border-radius:10px;background:var(--hl)}
+.check{display:flex;gap:12px;align-items:flex-start;padding:9px 0}
+.check input{width:24px;height:24px;margin-top:3px;accent-color:var(--demand);flex:none}
+.bar{height:12px;background:var(--grid);border-radius:99px;overflow:hidden;border:1.5px solid var(--ink)}
+.bar i{display:block;height:100%;width:0;background:var(--ok);transition:width .3s}
+
+/* graphiques */
+svg.fig{width:100%;height:auto;display:block;background:var(--sheet);border:2px solid var(--ink);border-radius:12px}
+svg.fig text{font:600 11px var(--mono);fill:var(--ink)}
+svg.fig .ax{stroke:var(--ink);stroke-width:2;fill:none}
+svg.fig .guide{stroke:var(--muted);stroke-width:1.2;stroke-dasharray:4 4}
+.range{width:100%;accent-color:var(--demand);height:28px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.88rem;margin:8px 0}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;margin-right:6px;vertical-align:-2px;border:1.5px solid var(--ink)}
+.readout{font:600 .85rem var(--mono);display:flex;gap:16px;flex-wrap:wrap}
+.matrix td{text-align:center;font-family:var(--mono);font-weight:600}
+.matrix td.nash{background:var(--ok-soft)}
+footer{padding:34px 18px;text-align:center;color:var(--muted);font:400 .8rem var(--mono)}
+</style>
+</head>
+<body>
+
+<header class="hero wrap">
+  <div class="hero-grid">
+    <div>
+      <span class="eyebrow">ECN1463-02 · Analyse microéconomique · A26</span>
+      <h1 style="margin-top:12px">Cahier de révision, un morceau à la fois.</h1>
+      <p class="lead">Choisis un onglet, lis une section, coche « compris ». Pas besoin de tout faire d'un coup.</p>
+    </div>
+    <div>
+      <svg class="fig" id="hero-fig" viewBox="0 0 380 270" role="img" aria-label="Graphique interactif offre et demande"></svg>
+      <label class="eyebrow" for="shift" style="display:block;margin-top:10px">Déplace la demande →</label>
+      <input class="range" id="shift" type="range" min="70" max="130" value="100">
+      <div class="readout"><span id="r-p"></span><span id="r-q"></span></div>
+    </div>
+  </div>
+</header>
+
+<div class="tabs"><div class="in">
+  <button data-tab="s9">Séance 9<small id="c-s9"></small></button>
+  <button data-tab="s10">Séance 10<small id="c-s10"></small></button>
+  <button data-tab="q2">Quiz II<small id="c-q2"></small></button>
+  <button data-tab="r12">Séances 9–12<small id="c-r12"></small></button>
+</div></div>
+
+<main class="wrap">
+
+<!-- ===================== SÉANCE 9 ===================== -->
+<div class="tab" id="tab-s9">
+  <div class="sheet warn"><span class="eyebrow">En 30 secondes</span><p style="margin:.3em 0 0">Pour analyser la concurrence, on utilise <strong>3 outils</strong> : Porter, groupes stratégiques, chaîne de valeur. Ensuite on choisit <strong>1 stratégie</strong> : coûts bas, différenciation ou niche.</p></div>
+  <nav class="chips" aria-label="Sections">
+    <a href="#s9-porter">Porter</a><a href="#s9-groupes">Groupes</a><a href="#s9-chaine">Chaîne de valeur</a>
+    <a href="#s9-strat">3 stratégies</a><a href="#s9-cycle">Cycle de vie</a><a href="#s9-joutes">Joutes</a>
+    <a href="#s9-disc">Discussion</a><a href="#s9-cartes">Cartes</a><a href="#s9-quiz">Quiz</a>
+  </nav>
+
+  <section id="s9-porter" data-sec>
+    <span class="eyebrow">Outil 1 sur 3</span>
+    <h2>Le modèle de Porter (5 + 1 forces)</h2>
+    <div class="sheet key">Il sert à mesurer à quel point un secteur est <strong>concurrentiel</strong>, donc à quel point il est difficile d'y gagner de l'argent. Un <em>secteur</em> = les firmes qui font des produits étroitement substituables avec les mêmes technologies de base.</div>
+    <div class="grid">
+      <div class="sheet"><h3>Rivalité entre concurrents</h3>Qui se bat déjà pour tes clients.</div>
+      <div class="sheet"><h3>Menace de nouveaux entrants</h3>Qui pourrait arriver demain.</div>
+      <div class="sheet"><h3>Pression des substituts</h3>Ce qui remplace ton produit.</div>
+      <div class="sheet"><h3>Pouvoir des clients</h3>Ils négocient le prix.</div>
+      <div class="sheet"><h3>Pouvoir des fournisseurs</h3>Ils dictent leurs conditions.</div>
+      <div class="sheet"><h3>+1 : la demande</h3>Croissance et volatilité.</div>
+    </div>
+    <details class="more"><summary>Plus de détails : quand chaque force est-elle forte ?</summary><div class="body">
+      <p class="eyebrow">Complément classique, pas dans les acétates</p>
+      <ul>
+        <li><strong>Rivalité forte :</strong> beaucoup de concurrents de taille semblable, croissance lente, coûts fixes élevés, produits peu différenciés, sortie difficile.</li>
+        <li><strong>Entrants :</strong> la menace baisse quand il y a des barrières : économies d'échelle, capital requis, accès à la distribution, réglementation.</li>
+        <li><strong>Substituts :</strong> ils répondent au même besoin autrement (train contre avion).</li>
+        <li><strong>Clients puissants :</strong> peu nombreux, gros volumes, changent facilement de fournisseur.</li>
+        <li><strong>Fournisseurs puissants :</strong> peu nombreux, produit unique, changer coûte cher.</li>
+      </ul>
+    </div></details>
+    <div class="sheet flat"><strong>Limite du modèle :</strong> il est <mark>statique</mark>. Il ne montre pas où créer un avantage concurrentiel, ni comment allier concurrence et coopération. D'où les deux outils suivants.</div>
+  </section>
+
+  <section id="s9-groupes" data-sec>
+    <span class="eyebrow">Outil 2 sur 3</span>
+    <h2>Les groupes stratégiques</h2>
+    <div class="sheet key">Un groupe = des entreprises qui suivent des <strong>stratégies comparables</strong> ou s'appuient sur les <strong>mêmes facteurs de concurrence</strong>.</div>
+    <div class="scroll-x"><table>
+      <tr><th>Critère</th><th>Exemples</th></tr>
+      <tr><td><strong>Champs d'activités</strong></td><td>Étendue de la gamme, niveau de prix ou de gamme, extension géographique, nombre de segments couverts, intégration verticale, taille, réseaux de distribution</td></tr>
+      <tr><td><strong>Allocation des ressources</strong></td><td>Nombre de marques détenues, effort marketing, intégration verticale, qualité, leadership technologique, taille</td></tr>
+    </table></div>
+    <div class="grid">
+      <div class="sheet"><h3>Concurrence intra-groupe</h3>Les rivaux les plus proches de toi : mêmes clients, mêmes armes.</div>
+      <div class="sheet"><h3>Concurrence inter-groupes</h3>Entre groupes différents. Moins directe, mais réelle.</div>
+      <div class="sheet"><h3>Barrières à la mobilité</h3>Ce qui t'empêche de passer d'un groupe à l'autre (capital, marque, savoir-faire).</div>
+    </div>
+    <p>Une fois affinée par l'analyse de la filière (la cartographie des chaînes de valeur), elle aide à repérer des <strong>zones de partenariat</strong> pour être plus efficaces et promouvoir l'industrie ensemble.</p>
+  </section>
+
+  <section id="s9-chaine" data-sec>
+    <span class="eyebrow">Outil 3 sur 3</span>
+    <h2>La chaîne de valeur (Porter)</h2>
+    <div class="sheet key">On compare la <strong>structure de coûts interne</strong> de l'entreprise à celle des concurrents, activité par activité.</div>
+    <div class="grid">
+      <div class="sheet"><h3>Activités principales</h3>La séquence qui fabrique et livre le produit. On les appelle aussi « activités de programme ».</div>
+      <div class="sheet"><h3>Activités de soutien</h3>Les « fonctions habilitantes » ou « services internes » qui rendent le reste possible.</div>
+    </div>
+    <p><strong>But :</strong> comprendre les besoins de cohérence et de coordination (les synergies) et améliorer le rapport coût/efficacité.</p>
+    <details class="more"><summary>Plus de détails : le schéma classique de Porter</summary><div class="body">
+      <p class="eyebrow">Le schéma des acétates est une image. Voici la version classique</p>
+      <p><strong>Principales :</strong> logistique interne → opérations → logistique externe → marketing et ventes → services.</p>
+      <p><strong>Soutien :</strong> infrastructure de la firme, gestion des ressources humaines, développement technologique, approvisionnement.</p>
+    </div></details>
+  </section>
+
+  <section id="s9-strat" data-sec>
+    <span class="eyebrow">Le choix</span>
+    <h2>Les 3 stratégies génériques</h2>
+    <div class="sheet flat">Toutes visent à rendre <strong>P − CM</strong> (le profit moyen) le plus grand possible. Rappel : <strong>P = min CM</strong> est le seuil de fermeture en longue période.</div>
+    <details open><summary>Domination par les coûts</summary><div class="body">
+      <ul>
+        <li><strong>Sources :</strong> volume d'activités, actifs partagés, complémentarité, subsidiarité.</li>
+        <li><strong>Locus :</strong> les 3 axes de la stratégie commerciale : produits, clientèle, livraison/technologie.</li>
+        <li><strong>Types d'économies :</strong> d'échelle, de portée, d'apprentissage, de coûts d'organisation.</li>
+        <li><strong>Pièges :</strong> déséconomies de coût de croissance et de coût de complexité.</li>
+        <li><strong>Exemple du cours :</strong> Walmart contre Sears (Sears a fini en faillite). Le détail est sur Moodle.</li>
+      </ul>
+      <p class="eyebrow">Définitions rapides</p>
+      <ul>
+        <li><strong>Économies d'échelle :</strong> le coût moyen baisse quand le volume monte.</li>
+        <li><strong>Économies de portée :</strong> produire plusieurs produits ensemble coûte moins que séparément.</li>
+        <li><strong>Économies d'apprentissage :</strong> le coût baisse avec l'expérience accumulée.</li>
+        <li><strong>Déséconomies de complexité :</strong> trop de variété fait remonter les coûts.</li>
+      </ul>
+    </div></details>
+    <details><summary>Différenciation</summary><div class="body">
+      <p>Un produit perçu comme <strong>unique</strong> par un segment de clientèle.</p>
+      <div class="grid">
+        <div class="sheet flat"><span class="pill o">vers le bas</span><h3 style="margin-top:8px">Épuration</h3>On enlève des fonctions pour <strong>minimiser le CM</strong>.</div>
+        <div class="sheet flat"><span class="pill">vers le haut</span><h3 style="margin-top:8px">Sophistication</h3>La valeur monte <strong>plus que proportionnellement</strong> au CM.</div>
+      </div>
+      <p>Passer de l'épuration à la sophistication n'est ni linéaire ni obligatoire (exemple du cours : les voitures Hyundai).</p>
+    </div></details>
+    <details><summary>Niche (focalisation, spécialisation, créneau)</summary><div class="body">
+      <ul>
+        <li>Actifs et compétences <strong>spécifiques</strong> pour répondre aux besoins d'un petit marché (avions d'affaires, avions amphibies).</li>
+        <li>C'est une différenciation, ou une domination par les coûts, <em>à l'extrême</em>.</li>
+        <li>Dans une niche, on peut <strong>combiner</strong> coûts bas et différenciation.</li>
+      </ul>
+    </div></details>
+    <div class="sheet key"><strong>Alignement stratégique :</strong> la stratégie de concurrence doit être cohérente avec la croissance <em>interne</em> (innovation de produit/service et de procédé) et <em>externe</em> (acquisition-fusion, externalisation, partenariat).</div>
+  </section>
+
+  <section id="s9-cycle" data-sec>
+    <span class="eyebrow">Selon l'âge de l'industrie</span>
+    <h2>Cycle de vie et stratégie</h2>
+    <div class="scroll-x"><table>
+      <tr><th>Phase</th><th>But</th><th>Stratégie indiquée</th></tr>
+      <tr><td><strong>Naissance</strong></td><td>Survivre à l'incertitude</td><td>Différenciation, innovation de produit/service</td></tr>
+      <tr><td><strong>Croissance</strong></td><td>Accroître et protéger sa part de marché</td><td>Différenciation, innovation de produit/service, acquisition-fusion ou partenariat</td></tr>
+      <tr><td><strong>Maturité</strong></td><td>Conserver sa part de marché</td><td>Coûts bas et concentration, innovation de <em>procédé</em>, acquisition-fusion ou partenariat</td></tr>
+      <tr><td><strong>Déclin</strong></td><td>Maintenir le volume de ventes et baisser les coûts</td><td>Coûts bas et concentration, acquisition-fusion ou externalisation, désinvestissement</td></tr>
+    </table></div>
+    <div class="sheet flat">Truc de mémoire : au début on <mark>innove</mark>, à la fin on <mark>réduit les coûts</mark>.</div>
+  </section>
+
+  <section id="s9-joutes" data-sec>
+    <span class="eyebrow">Passer à l'attaque</span>
+    <h2>Les joutes concurrentielles</h2>
+    <div class="scroll-x"><table>
+      <tr><th>Force à affronter</th><th>Contre-attaque</th></tr>
+      <tr><td>Menace des substituts</td><td>Améliorer le rapport qualité/prix</td></tr>
+      <tr><td>Menace des entrants potentiels</td><td>Fixer un prix non rentable pour les entrants</td></tr>
+      <tr><td>Pouvoir des acheteurs</td><td>Multiplier les réseaux de distribution</td></tr>
+      <tr><td>Pouvoir des fournisseurs</td><td>Multiplier les sources d'approvisionnement</td></tr>
+      <tr><td>Rôle des pouvoirs publics</td><td>Capacité de lobbying</td></tr>
+      <tr><td>Intensité concurrentielle</td><td>Capacité d'innovation</td></tr>
+    </table></div>
+  </section>
+
+  <section id="s9-disc" data-sec>
+    <span class="eyebrow">Pour ton travail de groupe</span>
+    <h2>Questions de discussion</h2>
+    <details><summary>Vrai ou faux : les entreprises combinent les stratégies ?</summary><div class="body">Plutôt vrai. Pour créer et garder un avantage, l'entreprise utilise souvent des <strong>stratégies hybrides</strong>, de façon complémentaire. Trouve des exemples concrets.</div></details>
+    <details><summary>Pourquoi la concurrence n'est-elle pas un jeu à somme nulle ?</summary><div class="body">Parce qu'on peut coopérer (alliances, promotion commune de l'industrie) et agrandir le marché. Le gain de l'un n'est pas forcément la perte de l'autre.</div></details>
+    <details><summary>Pourquoi la concurrence par les prix n'est-elle pas un jeu d'enfants ?</summary><div class="body">Baisser son prix écrase les marges, attire des représailles et peut mener sous le seuil de fermeture (P &lt; min CM). Il faut des coûts plus bas que les rivaux pour tenir.</div></details>
+    <details><summary>Quelle stratégie explique les prix de TON entreprise ?</summary><div class="body">À répondre avec ton étude de cas : coûts bas, différenciation ou niche ? Cherche ses prix par rapport aux concurrents du même groupe stratégique.</div></details>
+  </section>
+
+  <section id="s9-cartes"><span class="eyebrow">Mémoriser</span><h2>Cartes de révision</h2><div data-cards="s9"></div></section>
+  <section id="s9-quiz"><span class="eyebrow">Te tester</span><h2>Mini quiz</h2><div data-quiz="s9" class="sheet"></div></section>
+</div>
+
+<!-- ===================== SÉANCE 10 ===================== -->
+<div class="tab" id="tab-s10">
+  <div class="sheet warn"><span class="eyebrow">En 30 secondes</span><p style="margin:.3em 0 0">Une entreprise existe parce que <strong>passer par le marché coûte cher</strong>. Mais <strong>gérer en interne coûte aussi</strong>. Cinq théories expliquent ce choix.</p></div>
+  <nav class="chips" aria-label="Sections">
+    <a href="#s10-idee">L'idée</a><a href="#s10-hyp">Hypothèses</a><a href="#s10-gouv">Gouvernance</a><a href="#s10-theories">5 théories</a>
+    <a href="#s10-histoire">Qui, quand</a><a href="#s10-modes">4 modes</a><a href="#s10-exo">Exercice</a><a href="#s10-cartes">Cartes</a><a href="#s10-quiz">Quiz</a>
+  </nav>
+
+  <section id="s10-idee" data-sec>
+    <span class="eyebrow">Le point de départ</span>
+    <h2>L'entreprise comme nœud de contrats</h2>
+    <div class="sheet key">La firme n'est pas une « boîte noire » qui produit. C'est un <strong>nœud de contrats</strong> (transactions externes et internes) et de compétences.</div>
+    <p>Chaque option a un coût. L'entreprise choisit la moins chère, et cela trace ses <strong>frontières</strong> : ce qu'elle garde, ce qu'elle laisse partir.</p>
+    <div class="scroll-x"><table>
+      <tr><th>Sur le marché (externe)</th><th>Dans l'entreprise (interne)</th></tr>
+      <tr><td>Recherche des fournisseurs</td><td>Coûts de mandat (trucage, dérobade)</td></tr>
+      <tr><td>Rédaction et gestion des contrats</td><td>Coût de gestion de ces coûts de mandat</td></tr>
+      <tr><td>Litiges</td><td>Surveillance et résolution des conflits</td></tr>
+      <tr><td>Vulnérabilité techno-commerciale (qualité, pouvoir de marché, appropriation des processus et des résultats)</td><td>Structures et systèmes de gestion, de plus en plus lourds avec la taille, la dispersion, la diversité et l'envergure</td></tr>
+    </table></div>
+    <div class="sheet flat">La firme est donc la solution quand le marché coûte trop cher. <strong>Mais la hiérarchie a elle aussi ses coûts.</strong></div>
+  </section>
+
+  <section id="s10-hyp" data-sec>
+    <span class="eyebrow">Ce qu'on suppose</span>
+    <h2>Trois hypothèses plus réalistes</h2>
+    <p>Le cours relâche les hypothèses classiques (tout le monde sait tout, tout le monde est honnête) :</p>
+    <div class="grid">
+      <div class="sheet"><h3>Rationalité limitée</h3>On ne peut pas tout savoir ni tout calculer.</div>
+      <div class="sheet"><h3>Asymétrie d'information</h3>Les membres de l'organisation n'ont pas la même information.</div>
+      <div class="sheet"><h3>Opportunisme</h3>Les intérêts divergent : on est porté à en profiter plutôt qu'à collaborer.</div>
+    </div>
+  </section>
+
+  <section id="s10-gouv" data-sec>
+    <span class="eyebrow">Le mot clé</span>
+    <h2>Qu'est-ce que la gouvernance ?</h2>
+    <div class="sheet key"><strong>Gouvernance :</strong> coordination et contrôle des activités d'une action organisée. C'est le processus d'allocation des ressources de l'entreprise.</div>
+    <p><strong>Mécanismes de gouvernance :</strong> les moyens d'exercer une influence directive ou restrictive pour (r)amener les agents dans une action commune.</p>
+    <p>Attention : on la réduit souvent, à tort, au conseil d'administration, à la rémunération des dirigeants et à la corruption.</p>
+    <h3 style="margin-top:20px">Les 3 institutions traditionnelles</h3>
+    <div class="scroll-x"><table>
+      <tr><th>Institution</th><th>Principe</th><th>Coordination</th><th>Contrôle</th></tr>
+      <tr><td><strong>Marché</strong></td><td>Compétition</td><td>Système des prix, info décentralisée, rémunération des résultats</td><td>Multi-divisions, prix de transfert, bonus, commissions, options d'actions, promotion au mérite, taux d'escompte des projets</td></tr>
+      <tr><td><strong>Organisation</strong> (firme, État)</td><td>Hiérarchie (bureaucratie)</td><td>Directives, règles, procédures, info centralisée, rémunération des comportements</td><td>Fonctions, plans/budgets/rapports, description des tâches, surveillance directe, ancienneté</td></tr>
+      <tr><td><strong>Clan</strong> (culture)</td><td>Solidarité (mutualité, confiance)</td><td>Traditions, contraintes de comportement <em>ex ante</em></td><td>Valeurs et croyances, normes informelles, socialisation, réseautage, professionnalisation</td></tr>
+    </table></div>
+  </section>
+
+  <section id="s10-theories" data-sec>
+    <span class="eyebrow">Le cœur de la séance</span>
+    <h2>Les 5 théories</h2>
+    <p style="color:var(--muted)">Ouvre-en une à la fois.</p>
+    <details>
+      <summary>Marchés internes <span class="pill">Alchian &amp; Demsetz</span></summary>
+      <div class="body">
+        <p><strong>Idée :</strong> l'entreprise fonctionne comme un petit marché (aussi appelé quasi-marché).</p>
+        <ul>
+          <li><strong>Biens et services :</strong> des centres de profit et de coûts plutôt autonomes (divisions) s'échangent des produits au <em>prix de transfert</em>. Plus il est proche du prix de référence (le coût d'opportunité), plus le marché interne est concurrentiel.</li>
+          <li><strong>Travail :</strong> rémunération à la pièce ou à la tâche, commissions, primes, rémunération des cadres liée à la performance de leur unité, liberté de recrutement et de promotion à l'interne et à l'externe. Plus les rémunérations internes se rapprochent des salaires de référence, plus c'est concurrentiel.</li>
+          <li><strong>Capital :</strong> 3 mécanismes : rationnement des fonds, incitations financières des dirigeants à maximiser le profit, congédiement par la prise de contrôle. Plus les centres de profit choisissent librement entre financement interne et externe, plus c'est concurrentiel.</li>
+        </ul>
+      </div>
+    </details>
+    <details>
+      <summary>Coûts de transaction <span class="pill">Coase · Williamson</span></summary>
+      <div class="body">
+        <p><strong>Idée :</strong> comparer ce que coûte le marché et ce que coûte la gestion interne. Les coûts <em>augmentent</em> avec :</p>
+        <div class="grid">
+          <div class="sheet flat"><h3>Spécificité des actifs</h3>Un actif utile pour un seul partenaire.</div>
+          <div class="sheet flat"><h3>Fréquence</h3>Des transactions répétées.</div>
+          <div class="sheet flat"><h3>Incertitude</h3>Autour de la transaction.</div>
+          <div class="sheet flat"><h3>Durée de vie</h3>De la transaction.</div>
+        </div>
+        <p><strong>Conséquence :</strong> plus c'est risqué, plus on le fait soi-même. Ces coûts délimitent les <strong>frontières</strong> de l'entreprise :</p>
+        <ul>
+          <li><strong>Faire soi-même</strong> : internalisation / intégration</li>
+          <li><strong>Acquérir</strong> : acquisition-fusion</li>
+          <li><strong>Faire faire</strong> : impartition / sous-traitance</li>
+          <li><strong>Co-faire</strong> : alliance / partenariat / réseau</li>
+          <li><strong>Secteur public :</strong> délégation, contractualisation, décentralisation, privatisation, partenariat public-privé, concession, subventions</li>
+        </ul>
+      </div>
+    </details>
+    <details>
+      <summary>Droits de propriété et marchés contestables <span class="pill">Alchian · Alessi</span></summary>
+      <div class="body">
+        <p><strong>Idée :</strong> les droits de propriété influencent l'efficience du système économique.</p>
+        <ul>
+          <li>La propriété publique n'a pas de contrainte budgétaire forte.</li>
+          <li>La théorie prédit que la <strong>propriété privée avec le marché</strong> est seule à assurer une allocation optimale des ressources.</li>
+          <li>Raison : la <strong>discipline de la prise de contrôle</strong>. Le marché met en jeu l'emploi des gestionnaires (emploi contestable).</li>
+        </ul>
+      </div>
+    </details>
+    <details>
+      <summary>Relations mandataires (théorie de l'agence) <span class="pill">Jensen &amp; Meckling</span></summary>
+      <div class="body">
+        <p><strong>Idée :</strong> construire un système d'incitations, financières ou non, qui rapproche les intérêts divergents des <em>propriétaires</em> et des <em>gestionnaires</em>, malgré l'asymétrie d'information.</p>
+        <ul>
+          <li>Le comportement opportuniste est limité par des contrats de gestion et de performance.</li>
+          <li><strong>Contrats incomplets :</strong> « la propriété est source de pouvoir quand les contrats sont incomplets ». Exemple : les options d'actions pour cadres et employés complètent le contrat d'emploi.</li>
+        </ul>
+      </div>
+    </details>
+    <details>
+      <summary>Compétences distinctives <span class="pill">Penrose · Nelson &amp; Winter · Teece</span></summary>
+      <div class="body">
+        <p><strong>Idée :</strong> l'entreprise est un <em>corps de compétences</em> (théorie de la ressource, théorie de la firme évolutionniste), plus qu'un nœud de contrats.</p>
+        <ul>
+          <li>Les firmes diffèrent par les connaissances et compétences spécifiques qu'elles produisent, accumulent et adaptent.</li>
+          <li>Gouvernance « <strong>cognitive</strong> » : combiner les savoirs et favoriser l'apprentissage, au lieu de rendre les intérêts compatibles.</li>
+          <li>On internalise les activités qui correspondent à son corps de compétences, produit de son histoire.</li>
+          <li>Ses mécanismes (création, innovation, diffusion des connaissances) forment un <strong>4e mode de gouvernance : le savoir</strong>.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <section id="s10-histoire" data-sec>
+    <span class="eyebrow">Repères dans le temps</span>
+    <h2>Qui a dit quoi, et quand</h2>
+    <ul class="timeline">
+      <li><b>1937</b> · Coase : les coûts de transaction sur le marché (Nobel 1992)</li>
+      <li><b>1959</b> · Penrose : la théorie de la ressource</li>
+      <li><b>1971-72</b> · Doeringer &amp; Piore, Alchian &amp; Demsetz : marchés internes et droits de propriété</li>
+      <li><b>1975</b> · Williamson : détaille les coûts de transaction, externes et internes (Nobel 2009)</li>
+      <li><b>1976</b> · Jensen &amp; Meckling : la théorie de l'agence</li>
+      <li><b>1982</b> · Nelson &amp; Winter : la firme évolutionniste</li>
+      <li><b>1997</b> · Teece, Pisano &amp; Shuen : les capacités dynamiques</li>
+    </ul>
+    <p>L'analyse économique de la gouvernance date pratiquement de la 2e moitié des années 70.</p>
+    <details class="more"><summary>Lectures pour en savoir plus</summary><div class="body"><ul>
+      <li>Buisson-Fenet &amp; Navarro (2023), <em>La microéconomie en pratique</em>, chapitre 3.4</li>
+      <li>Ménard (2012), <em>L'économie des organisations</em>, 3e éd., La Découverte</li>
+      <li>Patry (2002), De la théorie de la firme à l'économie des organisations (HEC Montréal)</li>
+      <li>Pesqueux (2020), De l'économie des organisations (halshs-02863323)</li>
+      <li>Weinstein (2012), Les théories de la firme, <em>Idées économiques et sociales</em>, 170</li>
+    </ul></div></details>
+  </section>
+
+  <section id="s10-modes" data-sec>
+    <span class="eyebrow">Pour conclure</span>
+    <h2>Les 4 modes de gouvernance</h2>
+    <div class="grid">
+      <div class="sheet"><h3>Marché</h3>Prix, compétition.</div>
+      <div class="sheet"><h3>Hiérarchie</h3>Règles, directives.</div>
+      <div class="sheet"><h3>Clan</h3>Culture, confiance.</div>
+      <div class="sheet"><h3>Savoir</h3>Apprentissage, innovation.</div>
+    </div>
+    <div class="sheet key"><strong>Conclusion du prof :</strong> on ne choisit pas une théorie contre une autre. Seule une <mark>synergie optimisée des 4 modes</mark> mène à une mise en œuvre efficace et efficiente. Et au-delà des coûts de production, il existe des <strong>coûts d'organisation</strong> à maîtriser, même s'ils ne sont pas dans les états financiers.</div>
+  </section>
+
+  <section id="s10-exo" data-sec>
+    <span class="eyebrow">Travail de session</span>
+    <h2>Ton exercice, à cocher</h2>
+    <p>Pour l'entreprise de ton étude de cas, repère l'historique et la justification microéconomique de :</p>
+    <div class="sheet" id="checklist">
+      <label class="check"><input type="checkbox" data-k="a"><span>Les signes formels du <strong>marché</strong> comme mode de gouvernance (prix de transfert, centres de profit, primes)</span></label>
+      <label class="check"><input type="checkbox" data-k="b"><span>Ses <strong>acquisitions et fusions</strong></span></label>
+      <label class="check"><input type="checkbox" data-k="c"><span>Son <strong>impartition / sous-traitance</strong></span></label>
+      <label class="check"><input type="checkbox" data-k="d"><span>Ses <strong>alliances, partenariats et réseaux</strong></span></label>
+      <div class="bar" style="margin-top:12px"><i id="prog"></i></div>
+      <small id="progtxt" class="eyebrow"></small>
+    </div>
+    <p style="color:var(--muted)">Organisme public ? Cherche : délégation / contractualisation, dévolution / décentralisation, privatisation, partenariat public-privé, concession, subventions et contributions.</p>
+  </section>
+
+  <section id="s10-cartes"><span class="eyebrow">Mémoriser</span><h2>Cartes de révision</h2><div data-cards="s10"></div></section>
+  <section id="s10-quiz"><span class="eyebrow">Te tester</span><h2>Mini quiz</h2><div data-quiz="s10" class="sheet"></div></section>
+</div>
+
+<!-- ===================== RÉVISION QUIZ II ===================== -->
+<div class="tab" id="tab-q2">
+  <div class="sheet warn"><span class="eyebrow">Séances 5, 7 et 8</span><p style="margin:.3em 0 0">Concurrence parfaite, monopole, discrimination des prix, oligopole, marché du travail. Commence par le graphique, puis les questions.</p></div>
+  <div class="sheet flat"><strong>À savoir :</strong> les réponses viennent de moi, pas du prof (sauf la Q5, qui est dans le PDF). Vérifie avec ton cours. Les questions avec graphique sont expliquées par la méthode.</div>
+  <nav class="chips" aria-label="Sections">
+    <a href="#q2-formules">Formules</a><a href="#q2-graph">Graphique</a><a href="#q2-mono">Monopole</a><a href="#q2-oligo">Oligopole</a><a href="#q2-travail">Travail</a>
+    <a href="#q2-vf">Vrai ou faux</a><a href="#q2-qcm">Choix multiple</a><a href="#q2-court">Réponse courte</a><a href="#q2-cartes">Cartes</a>
+  </nav>
+
+  <section id="q2-formules" data-sec>
+    <span class="eyebrow">À savoir par cœur</span>
+    <h2>Les 4 règles de base</h2>
+    <div class="grid">
+      <div class="sheet"><h3>Concurrence parfaite</h3>Preneur de prix : <mark>P = Rm = Rmoy</mark>. Produit là où <strong>P = Cm</strong>. Fermeture : min CVM (court terme), min CM (long terme).</div>
+      <div class="sheet"><h3>Monopole</h3>Produit là où <mark>Cm = Rm</mark>, puis lit le prix sur la <strong>demande</strong>. P &gt; Rm. Produit moins, vend plus cher, crée une perte sèche.</div>
+      <div class="sheet"><h3>Discrimination des prix</h3>Il faut séparer les marchés <em>et</em> empêcher la revente. Parfaite : chacun paie son prix maximal.</div>
+      <div class="sheet"><h3>Marché du travail</h3>Hausse de salaire : effet <strong>substitution</strong> (plus de travail) contre effet <strong>revenu</strong> (plus de loisir).</div>
+    </div>
+  </section>
+
+  <section id="q2-graph" data-sec>
+    <span class="eyebrow">Fig. interactive</span>
+    <h2>Concurrence contre monopole</h2>
+    <p>Utile pour les questions à graphique (Q3 et 14). Change le mode et bouge le coût marginal.</p>
+    <div class="row" style="margin-bottom:10px">
+      <button class="primary" id="m-conc">Concurrence parfaite</button>
+      <button id="m-mono">Monopole</button>
+    </div>
+    <svg class="fig" id="mono-fig" viewBox="0 0 420 290" role="img" aria-label="Graphique concurrence et monopole"></svg>
+    <label class="eyebrow" for="cm" style="display:block;margin-top:10px">Coût marginal de départ</label>
+    <input class="range" id="cm" type="range" min="5" max="40" value="20">
+    <div class="legend">
+      <span><i style="background:var(--demand-soft)"></i>Surplus du consommateur</span>
+      <span><i style="background:var(--supply-soft)"></i>Surplus du producteur</span>
+      <span><i style="background:var(--bad-soft)"></i>Perte sèche</span>
+    </div>
+    <div class="readout" id="mono-read"></div>
+    <details class="more"><summary>Comment lire ce graphique</summary><div class="body"><ul>
+      <li>La <strong>demande</strong> descend. La <strong>Rm</strong> descend deux fois plus vite.</li>
+      <li>Concurrence : on produit là où <strong>Cm coupe la demande</strong> (P = Cm).</li>
+      <li>Monopole : on produit là où <strong>Cm coupe Rm</strong>, puis on monte jusqu'à la demande pour lire le prix.</li>
+      <li>La perte sèche est le triangle perdu entre les deux quantités.</li>
+      <li>Un <strong>prix plafond</strong> bien placé ramène la production vers le niveau concurrentiel.</li>
+    </ul></div></details>
+  </section>
+
+  <section id="q2-mono" data-sec>
+    <span class="eyebrow">Une recette en 5 étapes</span>
+    <h2>Résoudre un problème de monopole</h2>
+    <ol>
+      <li>Trace la <strong>demande</strong>.</li>
+      <li>Trace la <strong>Rm</strong> : elle part du même point, avec une pente deux fois plus forte.</li>
+      <li>Trouve la quantité où <strong>Cm = Rm</strong>.</li>
+      <li>Monte de cette quantité jusqu'à la <strong>demande</strong> : c'est le prix.</li>
+      <li>Compare à la concurrence (P = Cm) : le monopole a une quantité plus basse et un prix plus haut.</li>
+    </ol>
+    <details class="more"><summary>Plus de détails : types de monopole et réglementation</summary><div class="body"><ul>
+      <li><strong>Monopole naturel :</strong> une seule firme sert le marché à un coût plus bas que plusieurs (réseaux, comme Hydro-Québec).</li>
+      <li><strong>Monopole institutionnel :</strong> créé par la loi (comme la SAQ).</li>
+      <li><strong>Remèdes :</strong> rendre le marché plus concurrentiel, réglementer (prix plafond, prix = coût moyen pour un profit nul), ou rendre l'entreprise publique.</li>
+      <li><strong>Discrimination des prix :</strong> peut réduire la perte sèche et rapprocher la production du niveau concurrentiel, mais transfère du surplus au monopole.</li>
+    </ul></div></details>
+  </section>
+
+  <section id="q2-oligo" data-sec>
+    <span class="eyebrow">Théorie des jeux</span>
+    <h2>Oligopole et dilemme du prisonnier</h2>
+    <p>Chaque firme gagne à trahir, mais les deux gagnent à coopérer. Exemple (profits, gauche = firme A, droite = firme B) :</p>
+    <div class="scroll-x"><table class="matrix">
+      <tr><th></th><th>B : prix haut</th><th>B : prix bas</th></tr>
+      <tr><th>A : prix haut</th><td>10 , 10</td><td>2 , 15</td></tr>
+      <tr><th>A : prix bas</th><td>15 , 2</td><td class="nash">5 , 5</td></tr>
+    </table></div>
+    <ul>
+      <li>Peu importe ce que fait l'autre, <strong>baisser son prix</strong> rapporte plus. Donc les deux le font.</li>
+      <li>Résultat <span class="pill g">équilibre de Nash</span> : (5 , 5), moins bon que (10 , 10) pour les deux.</li>
+      <li><strong>Cartel :</strong> les firmes agissent comme un monopole (moins de production, prix plus haut), mais chacune est tentée de tricher.</li>
+      <li><strong>Paradoxe de Bertrand :</strong> deux firmes, même produit, concurrence par les prix : le prix tombe au coût marginal.</li>
+    </ul>
+  </section>
+
+  <section id="q2-travail" data-sec>
+    <span class="eyebrow">Séance 8</span>
+    <h2>Le marché du travail</h2>
+    <div class="grid">
+      <div class="sheet"><h3>Effet de substitution</h3>Le loisir coûte plus cher, donc on <strong>travaille plus</strong>.</div>
+      <div class="sheet"><h3>Effet de revenu</h3>On a plus de pouvoir d'achat, donc on prend <strong>plus de loisir</strong>.</div>
+    </div>
+    <ul>
+      <li>L'effet net sur l'offre de travail est <strong>ambigu</strong> : il dépend de l'élasticité des heures travaillées.</li>
+      <li>L'offre de travail ne part pas de l'origine : il existe un <strong>salaire de réserve</strong>.</li>
+      <li><strong>Salaire minimum</strong> et <strong>cotisations sociales</strong> : le travail coûte plus cher, la demande de travail baisse, le chômage augmente.</li>
+      <li>Un fort <strong>impôt sur le revenu</strong> peut baisser l'offre de travail si les heures travaillées sont élastiques.</li>
+    </ul>
+  </section>
+
+  <section id="q2-vf" data-sec>
+    <span class="eyebrow">Partie I</span>
+    <h2>Vrai ou faux ? Pourquoi ?</h2>
+    <div data-quiz="vf" class="sheet"></div>
+  </section>
+
+  <section id="q2-qcm" data-sec>
+    <span class="eyebrow">Partie II</span>
+    <h2>Choix multiple</h2>
+    <div data-quiz="qcm" class="sheet"></div>
+    <div class="sheet flat"><strong>Q14.1 et Q14.2</strong> demandent le graphique du PDF. Méthode : le monopole produit là où Cm coupe Rm, puis monte jusqu'à la demande pour lire le prix. Un prix plafond au point où la demande croise Cm ramène la production au niveau de la concurrence parfaite.</div>
+  </section>
+
+  <section id="q2-court" data-sec>
+    <span class="eyebrow">Partie III</span>
+    <h2>Réponse courte</h2>
+    <details>
+      <summary>Q1 · Le paradoxe de Bertrand</summary>
+      <div class="body">
+        <p>Deux entreprises vendent le <strong>même bien</strong> et se font concurrence par les <strong>prix</strong>.</p>
+        <ul><li>Chacune gagne tout le marché si elle baisse un peu son prix.</li><li>Les deux baissent jusqu'à <strong>P = Cm</strong>, donc profit nul.</li></ul>
+        <p><strong>Paradoxe :</strong> avec seulement 2 firmes, on obtient le résultat de la concurrence parfaite.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Q2 · Avantages et inconvénients de la discrimination des prix</summary>
+      <div class="body"><div class="scroll-x"><table>
+        <tr><th></th><th>Avantages</th><th>Inconvénients</th></tr>
+        <tr><td><strong>Monopole</strong></td><td>Profit plus élevé, récupère du surplus des consommateurs</td><td>Coûts pour séparer les marchés et empêcher la revente</td></tr>
+        <tr><td><strong>Société</strong></td><td>Production plus proche de la concurrence, perte sèche réduite, plus de gens servis</td><td>Surplus des consommateurs transféré au monopole, inégalités de prix</td></tr>
+      </table></div></div>
+    </details>
+    <details>
+      <summary>Q3 · Concurrence contre monopole (graphique)</summary>
+      <div class="body">
+        <ul>
+          <li><strong>a) Production :</strong> concurrence là où <strong>P = Cm</strong>. Monopole là où <strong>Cm = Rm</strong> (quantité plus petite).</li>
+          <li><strong>b) Surplus du producteur :</strong> aire entre le prix et la courbe de Cm, jusqu'à la quantité produite.</li>
+          <li><strong>c) Surplus du consommateur :</strong> aire entre la demande et le prix, jusqu'à la quantité produite. Plus petit en monopole.</li>
+          <li><strong>d) Perte sèche :</strong> triangle entre la demande et le Cm, entre la quantité du monopole et celle de la concurrence.</li>
+        </ul>
+        <p class="eyebrow">Les lettres A, B, C sont sur le graphique du PDF. Utilise la figure interactive plus haut pour repérer les aires.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Q4 · Salaire minimum + cotisations sociales : plus de chômage</summary>
+      <div class="body"><ol>
+        <li><strong>Cotisations sociales :</strong> le travail coûte plus cher à l'employeur, donc la <strong>demande de travail se déplace vers la gauche</strong>.</li>
+        <li><strong>Salaire minimum :</strong> un plancher au-dessus de l'équilibre, donc offre &gt; demande = <strong>chômage</strong>.</li>
+        <li><strong>Les deux ensemble :</strong> la demande est plus basse <em>et</em> le salaire reste bloqué au plancher. L'écart entre offre et demande est plus grand que pour chaque mesure seule.</li>
+      </ol></div>
+    </details>
+    <details open>
+      <summary>Q5 · Substitution et revenu <span class="pill g">réponse du prof</span></summary>
+      <div class="body">
+        <p><strong>i)</strong> <em>Substitution :</em> le loisir coûte plus cher, donc on travaille plus. <em>Revenu :</em> on a plus de pouvoir d'achat, donc on prend plus de loisir et on travaille moins.</p>
+        <p><strong>ii)</strong> Ici l'effet-revenu l'emporte : l'offre de travail baisse au final, malgré le coût d'opportunité plus élevé du loisir.</p>
+        <p><strong>iii)</strong> L'offre augmente si l'effet-prix (substitution) l'emporte.</p>
+        <p><strong>iv)</strong> Tout dépend de l'élasticité des heures travaillées. Une hausse du salaire minimum a des effets pervers : la main-d'œuvre disponible vient plutôt d'une baisse de la demande de travail des entreprises.</p>
+        <details class="more"><summary>Appendice (pas requis)</summary><div class="body">Salaire de départ 10, qui monte à 16. Avec 150 de revenu de non-travail et 48 h : 150 + 48×10 = 630 au départ, puis 918 après la hausse. Les points d'équilibre A et B sont les tangences entre la droite budgétaire et la courbe d'indifférence la plus haute.</div></details>
+      </div>
+    </details>
+  </section>
+
+  <section id="q2-cartes"><span class="eyebrow">Mémoriser</span><h2>Cartes de révision</h2><div data-cards="q2"></div></section>
+</div>
+
+<!-- ===================== RÉVISION SÉANCES 9 À 12 ===================== -->
+<div class="tab" id="tab-r12">
+  <div class="sheet warn"><span class="eyebrow">Dates (plan de cours)</span>
+    <ul style="margin:.4em 0 0">
+      <li><strong>Quiz 3 : mercredi 25 novembre 2026</strong>, au début de la séance, 30 à 40 minutes. Il porte sur les <strong>séances 9 à 11</strong> seulement.</li>
+      <li><strong>Examen final : 16 décembre 2026</strong>, sur toute la matière. Le rapport final de l'étude de cas est remis le même jour.</li>
+      <li><strong>Notes :</strong> travail de session 40 %, trois quiz 30 %, examen final 30 %.</li>
+    </ul></div>
+  <div class="sheet flat">Pour le quiz de demain, concentre-toi sur <strong>Porter, gouvernance (séance 10) et mondialisation (séance 11)</strong>. La séance 12 (partie B) sert surtout pour l'examen final.</div>
+  <nav class="chips" aria-label="Sections">
+    <a href="#r12-s11">Séance 11</a><a href="#r12-s12">Séance 12</a><a href="#r12-sim">Simulateur</a><a href="#r12-porter">Joutes de Porter</a>
+    <a href="#r12-ex">Exercices</a><a href="#r12-src">Sources</a><a href="#r12-notes">Mes notes</a>
+  </nav>
+
+  <section id="r12-s11" data-sec>
+    <span class="eyebrow">Séance 11</span>
+    <h2>Mondialisation, blocs régionaux et Toyota</h2>
+    <div class="sheet key">Trois façons de s'organiser à l'échelle mondiale, cinq niveaux d'intégration entre pays, et un exemple complet : Toyota.</div>
+
+    <h3 style="margin-top:22px">Les 3 modèles d'entreprise mondiale</h3>
+    <div class="grid">
+      <div class="sheet"><span class="pill o">Globale</span><h3 style="margin-top:8px">Tesla</h3>Intégration mondiale <strong>forte</strong>, adaptation locale <strong>faible</strong>.</div>
+      <div class="sheet"><span class="pill">Multinationale</span><h3 style="margin-top:8px">Stellantis</h3>Adaptation locale <strong>forte</strong>, intégration mondiale <strong>faible</strong>.</div>
+      <div class="sheet"><span class="pill g">Transnationale</span><h3 style="margin-top:8px">Toyota</h3>Les <strong>deux à la fois</strong> : intégration mondiale élevée et forte adaptation locale (TNGA).</div>
+    </div>
+
+    <h3 style="margin-top:22px">Les 5 degrés d'intégration (Balassa)</h3>
+    <p style="color:var(--muted)">Clique un niveau pour voir ce qu'il ajoute.</p>
+    <div id="bal-steps" class="row" style="flex-direction:column;align-items:stretch"></div>
+    <div class="sheet key" id="bal-box" aria-live="polite"></div>
+
+    <h3 style="margin-top:22px">Blocs régionaux</h3>
+    <div class="grid">
+      <div class="sheet"><h3>Union européenne</h3>L'intégration la <strong>plus poussée</strong> (presque une union politique).</div>
+      <div class="sheet"><h3>ACEUM</h3>Intégration <strong>superficielle</strong>.</div>
+      <div class="sheet"><h3>MERCOSUR</h3>Une <strong>union douanière</strong>.</div>
+      <div class="sheet"><h3>ZLECAf (Afrique)</h3>Freinée par le « bol de spaghetti » : des accords qui se chevauchent.</div>
+    </div>
+
+    <h3 style="margin-top:22px">Les règles d'origine</h3>
+    <p>Elles disent quand un produit est considéré comme venant de la zone, donc quand il a droit aux tarifs préférentiels. Cinq critères :</p>
+    <ul><li>Entièrement obtenu</li><li>Changement de tarif</li><li>Valeur ajoutée régionale (contenu local)</li><li>Processus de fabrication spécifique</li><li>Combinaison des règles</li></ul>
+
+    <h3 style="margin-top:22px">Comment les entreprises répondent aux zones de libre-échange</h3>
+    <p>Responsabilité sociale, acquisitions et fusions, R&amp;D et innovation, portée de l'entreprise, investissements directs à l'étranger (IDE), gestion des filiales.</p>
+
+    <h3 style="margin-top:22px">Toyota : TNGA et gouvernance</h3>
+    <div class="grid">
+      <div class="sheet"><h3>Échelle</h3>Châssis et groupes motopropulseurs standardisés (TNGA).</div>
+      <div class="sheet"><h3>Envergure</h3>R&amp;D hybride partagée, de la Yaris au RAV4.</div>
+      <div class="sheet"><h3>Apprentissage</h3>Les pratiques TPS / Lean passent d'une usine et d'un fournisseur à l'autre.</div>
+    </div>
+    <div class="scroll-x"><table>
+      <tr><th>Mode</th><th>Chez Toyota</th></tr>
+      <tr><td><strong>Hiérarchie</strong></td><td>Audit de sécurité</td></tr>
+      <tr><td><strong>Marché</strong></td><td>Mise en concurrence</td></tr>
+      <tr><td><strong>Clan</strong></td><td>Kaizen, corde Andon</td></tr>
+      <tr><td><strong>Savoir</strong></td><td>Global Production Centers (échange du savoir dans les deux sens)</td></tr>
+    </table></div>
+
+    <h3 style="margin-top:22px">CETA et appellations contrôlées</h3>
+    <p><strong>Opportunités :</strong> vins et spiritueux, produits laitiers et fromages, reconnaissance des indications géographiques. <strong>Défis :</strong> viandes de bœuf et de porc, lait, fromage et volaille.</p>
+    <details class="more"><summary>Plus de détails des acétates (séance 11)</summary><div class="body">
+      <p><strong>Mondialisation de l'industrie</strong> (acétate 3) : la globalisation sert d'arme de concurrence. Marchés de produits : goûts qui s'homogénéisent, importance des clients étrangers, approches marketing faciles à transférer. Les coûts changent (échelle, envergure, apprentissage, approvisionnement, main-d'œuvre directe). L'État ne disparaît pas : barrières tarifaires et non tarifaires, normalisation, partenariats public-privé.</p>
+      <p><strong>Mondialisation de la firme</strong> (acétate 4) : il faut distinguer <em>mondialisation</em> et <em>internationalisation</em>, totale ou partielle. Réponses possibles : défendre son marché, exporter des produits standards, structures multi-domestiques, structures globales avec production intégrée, réseaux, alliances.</p>
+      <p><strong>Stratégies des entreprises globales</strong> (acétate 12) : se spécialiser sur certains maillons de la chaîne de valeur et « l'éclater » à travers le monde, en gardant le contrôle par les intangibles. Exemples : Honda (moteurs), Coca-Cola (marketing), Microsoft et Intel (standards).</p>
+      <p><strong>Contrôle des entreprises globales</strong> (acétates 13-14) :</p>
+      <ul>
+        <li><em>Marché :</em> prix de transfert, avec leurs enjeux d'organisation et de fiscalité internationale.</li>
+        <li><em>Bureaucratique :</em> le siège social comme chef d'orchestre, gestion globale en temps réel (Internet, vidéoconférence).</li>
+        <li><em>Clan :</em> une équipe de gestionnaires globaux (environ 500 chez GE), recrutement ad hoc, rémunération axée sur l'apprentissage international, équipes interculturelles. Cadre de Hofstede : attitude face au pouvoir, face à l'incertitude, individualisme.</li>
+      </ul>
+      <p><strong>Règles d'origine</strong> (acétate 11) : plus le niveau de classification du changement de tarif monte, plus la règle est restrictive. Plus le seuil de valeur ajoutée régionale est exigeant (peu de matériel importé permis), plus elle est restrictive. La « combinaison des règles » est la plus orientée vers le développement industriel, mais aussi la plus restrictive et la plus difficile à faire respecter.</p>
+      <p><strong>Impact attendu d'une zone de libre-échange</strong> (acétate 8) : économique (exportations et importations, IDE, recettes fiscales, emplois), social et environnement (équité hommes-femmes, conditions de travail, inégalités, technologies vertes), contraintes de commerce intra-régional, et comportement stratégique des entreprises.</p>
+      <p><strong>Blocs</strong> (acétate 7) : l'acétate écrit « ACEM (ex-ALENA) », l'examen écrit « ACEUM ». ASEAN prévoit aussi un marché commun. Les accords interrégionaux se multiplient (CETA, TTIP, Asie-Pacifique) et l'intégration Nord-Sud est perçue comme inégale.</p>
+      <p><strong>CETA</strong> (acétates 17-18) : opportunités pour l'Europe : marchés publics (dont les provinces), élimination des droits de douane sur les marchandises, produits pharmaceutiques, télécoms, investissements, services financiers. Agriculture : vins et spiritueux (fin du contrôle monopolistique des provinces), produits laitiers et fromages (contingents tarifaires), indications géographiques, normes sanitaires. Défis : viandes bovine et porcine, et pour le Canada le lait, le fromage et la volaille.</p>
+      <p><strong>Lectures</strong> (acétate 19) : Lefebvre (2005) ; CPQ (2017) ; Delcoigne (2017, facultatif) ; Hyun (2025) sur Toyota ; Kamau et Mwangi (2023). <strong>Atelier</strong> (acétate 20) : appliquer les acétates 11 à 14 à ton entreprise.</p>
+    </div></details>
+    <details class="more"><summary>Citations exactes des acétates (séance 11)</summary><div class="body" id="quotes-s11"></div></details>
+  </section>
+
+  <section id="r12-s12" data-sec>
+    <span class="eyebrow">Séance 12</span>
+    <h2>Alliances et externalisation</h2>
+    <div class="sheet flat"><strong>Selon le plan de cours (25 novembre) :</strong> acquisitions et fusions, sous-traitance et externalisation, délocalisation. Lectures : Ménard (2012), chapitre IV ; Meloche et al. (2020), chapitre 5, pages 40 à 47. Les acétates de cette séance ne sont pas dans tes documents : voici ce que demandent les questions de la partie B.</div>
+    <details open><summary>Pourquoi préférer une alliance aux A&amp;F à l'étranger ?</summary><div class="body">
+      <p>Quand les coûts de transaction <em>et</em> de complexité sont élevés :</p>
+      <ol>
+        <li>On réduit l'exposition financière face à l'incertitude locale.</li>
+        <li>On évite les coûts d'intégration et les chocs culturels d'une fusion.</li>
+        <li>On limite les coûts de contrôle à distance.</li>
+        <li>On accède aux connaissances et aux réseaux d'un partenaire local.</li>
+      </ol>
+    </div></details>
+    <details><summary>Impartition, sous-traitance, délocalisation : la différence</summary><div class="body"><ul>
+      <li><strong>Impartition :</strong> on transfère une fonction ou un service interne (exemple : TI, paie).</li>
+      <li><strong>Sous-traitance :</strong> on fait fabriquer ou exécuter selon des spécifications (exemple : des pièces).</li>
+      <li><strong>Délocalisation :</strong> on transfère l'activité dans un autre pays (exemple : une usine).</li>
+    </ul></div></details>
+    <details><summary>Le « paradoxe » : acquérir des firmes tout en fermant des divisions</summary><div class="body">
+      L'entreprise maximise RT − CT : elle réduit les coûts de complexité et de mandat (fermer des unités peu rentables, impartir RH, finances, TI), et elle acquiert des actifs stratégiques pour renforcer son <strong>cœur de compétences</strong> et ses économies d'échelle.
+    </div></details>
+  </section>
+
+  <section id="r12-sim" data-sec>
+    <span class="eyebrow">Interactif</span>
+    <h2>Simulateur : faire, acquérir, faire faire ou co-faire ?</h2>
+    <p>Bouge les curseurs : quelle option devient la plus logique ?</p>
+    <div class="sheet">
+      <label class="eyebrow" for="w-ext">Coûts de transaction externes : <span id="w-ext-val"></span></label>
+      <input class="range" id="w-ext" type="range" min="0" max="100" value="50">
+      <p style="color:var(--muted);margin:.2em 0 1em">Spécificité des actifs, fréquence, incertitude, durée de vie.</p>
+      <label class="eyebrow" for="w-int">Coûts de complexité et de mandat internes : <span id="w-int-val"></span></label>
+      <input class="range" id="w-int" type="range" min="0" max="100" value="50">
+      <p style="color:var(--muted);margin:.2em 0 0">Trucage, dérobade, surveillance, conflits.</p>
+    </div>
+    <div class="sheet key" aria-live="polite"><span class="pill" id="w-badge"></span><h3 id="w-title" style="margin-top:10px"></h3><p id="w-desc" style="margin:.3em 0 0"></p></div>
+  </section>
+
+  <section id="r12-porter" data-sec>
+    <span class="eyebrow">Interactif</span>
+    <h2>Joutes de Porter : clique une force</h2>
+    <p>Pour chaque force, quelle est la réponse attendue ?</p>
+    <div class="row" id="porter-btns"></div>
+    <div class="sheet" id="porter-card" aria-live="polite" style="margin-top:14px"></div>
+  </section>
+
+  <section id="r12-ex">
+    <span class="eyebrow">Révision</span>
+    <h2>Les exercices du PDF de révision</h2>
+    <div class="sheet flat"><div class="row" style="justify-content:space-between"><strong>Maîtrisé : <span id="mastery-pct">0%</span></strong><span class="eyebrow" id="mastery-txt"></span></div><div class="bar" style="margin-top:8px"><i id="mastery-bar"></i></div></div>
+    <div class="row" id="ex-tabs" style="margin:14px 0 8px"></div>
+    <div class="row" style="margin-bottom:6px">
+      <button id="trap-btn">Pièges d'examen : désactivé</button>
+      <button id="reveal-btn">Tout afficher</button>
+    </div>
+    <div id="ex-list"></div>
+  </section>
+
+  <section id="r12-src">
+    <span class="eyebrow">Retrouver la source</span>
+    <h2>Index des PDF et des acétates</h2>
+    <div class="row" id="src-tabs" style="margin:10px 0"></div>
+    <div id="src-list"></div>
+  </section>
+
+  <section id="r12-notes">
+    <span class="eyebrow">Ton espace</span>
+    <h2>Mes notes de chapitres</h2>
+    <p>Colle un extrait de livre (Buisson-Fenet &amp; Navarro, Ménard…). Il reste enregistré dans ton navigateur.</p>
+    <div class="sheet">
+      <input id="note-title" type="text" placeholder="Titre de la fiche" style="width:100%;font:inherit;padding:10px;border:2px solid var(--ink);border-radius:10px;background:var(--paper);color:var(--ink);margin-bottom:10px">
+      <textarea id="note-text" rows="5" placeholder="Colle ton extrait ici" style="width:100%;font:inherit;padding:10px;border:2px solid var(--ink);border-radius:10px;background:var(--paper);color:var(--ink)"></textarea>
+      <div class="row" style="margin-top:10px"><button class="primary" id="note-save">Enregistrer la fiche</button><span class="eyebrow" id="note-msg"></span></div>
+    </div>
+    <div id="note-list"></div>
+  </section>
+</div>
+
+</main>
+
+<footer>Cahier simplifié · basé sur les acétates de M. Tereraho, ECN1463-02 A26</footer>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const store={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+
+/* ---------- Onglets ---------- */
+const TABS=['s9','s10','q2','r12'];
+function showTab(t){
+  if(!TABS.includes(t))t='s10';
+  TABS.forEach(x=>{$('#tab-'+x).classList.toggle('on',x===t);$('[data-tab="'+x+'"]').classList.toggle('on',x===t)});
+  store.set('ecn-tab',t);
+}
+$$('[data-tab]').forEach(b=>b.addEventListener('click',()=>{showTab(b.dataset.tab);window.scrollTo({top:$('.tabs').offsetTop,behavior:'smooth'})}));
+showTab(store.get('ecn-tab','s10'));
+
+/* ---------- Exemples concrets, injectés en fin de section ---------- */
+const EXAMPLES={
+ 's9-porter':[
+  ["Compagnies aériennes (les 5 forces d'un coup)","<strong>Rivalité :</strong> Air Canada, WestJet, Porter se battent sur les mêmes routes. <strong>Entrants :</strong> les avions coûtent très cher, mais des transporteurs à bas prix arrivent quand même. <strong>Substituts :</strong> train, auto, visioconférence. <strong>Clients :</strong> les voyageurs comparent les prix en ligne en 2 minutes. <strong>Fournisseurs :</strong> Boeing et Airbus sont presque les seuls à vendre de gros avions, donc ils ont un grand pouvoir."],
+  ["Le café","Rivalité forte entre chaînes. Entrants faciles (ouvrir un petit café coûte peu). Substitut : le café fait à la maison."]
+ ],
+ 's9-groupes':[
+  ["Industrie automobile","<strong>Groupe luxe :</strong> BMW, Mercedes. <strong>Groupe économique :</strong> Hyundai, Kia. <strong>Groupe électrique :</strong> Tesla. Ils ne se font pas la même concurrence. Pour passer du groupe économique au luxe, il faut une marque, un réseau de concessionnaires et du savoir-faire : ce sont les barrières à la mobilité."],
+  ["Supermarchés","Groupe « escompte » (Maxi, Super C) contre groupe « qualité et service » (IGA, Metro). Même secteur, stratégies différentes."]
+ ],
+ 's9-chaine':[
+  ["Un restaurant","<strong>Principales :</strong> achat des ingrédients → cuisine → livraison ou service en salle → promotion → service après-vente (avis, fidélité). <strong>Soutien :</strong> gestion du personnel, logiciel de commandes, comptabilité, local."],
+  ["Comparer avec un concurrent","Si ta cuisine coûte moins cher mais ta livraison coûte plus cher que celle du concurrent, la chaîne de valeur te montre où tu perds de l'argent."]
+ ],
+ 's9-strat':[
+  ["Domination par les coûts : Walmart","Gros volumes, logistique très efficace, prix bas. C'est l'exemple du cours (Walmart contre Sears, qui a fini en faillite)."],
+  ["Économies d'échelle","Une usine qui produit 1 million d'unités paie moins cher par unité que celle qui en produit 1 000."],
+  ["Économies de portée","Une boulangerie qui utilise le même four pour le pain et les viennoiseries."],
+  ["Économies d'apprentissage","Un chantier naval qui construit son 50e navire va plus vite et gaspille moins que pour le 1er."],
+  ["Déséconomie de complexité","Une entreprise qui offre 40 variantes d'un même produit gère plus de stocks, d'erreurs et de commandes."],
+  ["Différenciation vers le bas (épuration)","Ryanair : pas de repas ni de bagages inclus, donc un billet moins cher."],
+  ["Différenciation vers le haut (sophistication)","Tesla, Apple : on paie plus cher parce que la valeur perçue monte plus vite que le coût."],
+  ["Hyundai (exemple du prof)","Elle est partie de voitures épurées et peu chères, puis a ajouté des modèles plus sophistiqués. Le passage n'était pas obligé."],
+  ["Niche","Les avions d'affaires et les avions amphibies (exemples du prof). Autre exemple : une boutique de vélos de course pour compétiteurs."]
+ ],
+ 's9-cycle':[
+  ["Naissance","L'intelligence artificielle générative : peu de clients, beaucoup d'incertitude, tout le monde cherche son produit."],
+  ["Croissance","Les véhicules électriques : la demande monte vite, on se bat pour sa part de marché."],
+  ["Maturité","Les téléphones intelligents : le marché est saturé, on gagne par les coûts et l'innovation de procédé."],
+  ["Déclin","Les DVD : on réduit les coûts, on externalise, on désinvestit."]
+ ],
+ 's9-joutes':[
+  ["Substituts","Un service de musique en ligne baisse le prix de son forfait familial pour rester plus attrayant que le piratage."],
+  ["Entrants","Des grands opérateurs de télécoms baissent leurs forfaits à l'arrivée d'un nouveau concurrent pour rendre son entrée peu rentable."],
+  ["Acheteurs","Un fabricant ouvre une boutique en ligne en plus de vendre en magasin : il dépend moins d'un seul grand détaillant."],
+  ["Fournisseurs","Un assembleur de téléphones achète ses écrans et ses puces à plusieurs fournisseurs, pas à un seul."],
+  ["Pouvoirs publics","Les taxis et les plateformes de covoiturage ont fait du lobbying pour influencer la réglementation."]
+ ],
+ 's9-disc':[
+  ["Stratégies hybrides","IKEA : prix bas (coûts) et design reconnaissable (différenciation). Toyota : coûts maîtrisés et réputation de fiabilité."],
+  ["Pas un jeu à somme nulle","Les alliances aériennes (comme Star Alliance) : les compagnies se concurrencent, mais partagent des vols et élargissent leur clientèle ensemble."],
+  ["Prix pas un jeu d'enfants","Une guerre des prix entre stations-service ou épiceries écrase les marges des deux côtés. Sears n'a pas tenu face à Walmart."]
+ ],
+ 's10-idee':[
+  ["Faire ou acheter","Tesla fabrique beaucoup de ses composants et son logiciel elle-même. Apple conçoit ses produits mais confie l'assemblage à des sous-traitants. Une PME peut confier sa paie à un cabinet comptable plutôt que d'embaucher."],
+  ["Actif spécifique (exemple classique de Williamson)","Fisher Body fabriquait des carrosseries uniquement pour General Motors. Pour éviter d'être à la merci d'un seul client, les deux entreprises ont fini par fusionner."]
+ ],
+ 's10-hyp':[
+  ["Rationalité limitée","Un gestionnaire ne peut pas comparer les 500 fournisseurs possibles : il choisit parmi ceux qu'il connaît."],
+  ["Asymétrie d'information","Le vendeur sait si la voiture usagée a des défauts. L'acheteur, lui, ne le sait pas."],
+  ["Opportunisme","Un sous-traitant qui sait que tu dépends de lui augmente ses prix après la signature."]
+ ],
+ 's10-gouv':[
+  ["Marché","Un vendeur payé à la commission. Une division qui vend ses produits à une autre au prix de transfert."],
+  ["Hiérarchie","L'armée ou la fonction publique : règles, procédures, chaîne de commandement."],
+  ["Clan","Un cabinet d'avocats ou un hôpital : normes de la profession, confiance, mentorat."]
+ ],
+ 's10-theories':[
+  ["Marchés internes","Dans une chaîne de magasins, chaque gérant est un centre de profit et reçoit une prime sur les résultats de son magasin. La division « fabrication » vend à la division « ventes » à un prix de transfert."],
+  ["Coûts de transaction","Un fabricant qui a besoin d'une pièce unique, utilisée par lui seul, aura intérêt à la produire lui-même. Pour une vis standard, il l'achète sur le marché."],
+  ["Droits de propriété","Si les gestionnaires d'une société cotée font mal leur travail, le cours de l'action baisse. Un acheteur peut alors prendre le contrôle et les remplacer."],
+  ["Agence","Un PDG reçoit des options d'actions : plus l'action monte, plus il gagne. Ses intérêts se rapprochent donc de ceux des actionnaires."],
+  ["Compétences distinctives","Toyota et son système de production : un savoir-faire construit sur des décennies, impossible à acheter ou copier rapidement."],
+  ["Secteur public","<strong>Contractualisation :</strong> un ministère confie l'entretien des routes à des entreprises privées. <strong>PPP :</strong> le Centre universitaire de santé McGill (CUSM) à Montréal. <strong>Privatisation :</strong> Air Canada. <strong>Subventions :</strong> aides financières à des entreprises ou organismes."]
+ ],
+ 's10-modes':[
+  ["Les 4 modes dans une seule entreprise","Une grande entreprise de technologie utilise le <strong>marché</strong> (primes à la performance), la <strong>hiérarchie</strong> (budgets et règles), le <strong>clan</strong> (culture d'équipe) et le <strong>savoir</strong> (partage des connaissances, formation continue)."]
+ ],
+ 's10-exo':[
+  ["Marché interne","Couche-Tard : chaque dépanneur est un centre de profit avec un gérant dont la rémunération dépend des résultats. Cherche si ton entreprise fait pareil."],
+  ["Acquisitions","Couche-Tard a grandi par des rachats (par exemple Statoil Fuel &amp; Retail en 2012, CST Brands en 2017). Cherche l'année et la raison économique : économies d'échelle, nouveaux marchés."],
+  ["Impartition et alliances","Pour ton cas, regarde ce que l'entreprise sous-traite (transport, informatique, nettoyage) et avec qui elle s'allie (franchises, fournisseurs, partenaires technologiques)."]
+ ],
+ 'q2-formules':[
+  ["P = Rm = Rmoy","Un fermier qui vend son blé au prix du marché : peu importe combien il vend, chaque unité se vend au même prix."],
+  ["Monopole","Hydro-Québec (monopole naturel) ou un médicament protégé par un brevet : la firme choisit sa quantité et lit le prix sur la demande."],
+  ["Discrimination des prix","Tarif étudiant au cinéma, rabais pour aînés, billet d'avion moins cher si on reste le samedi soir."],
+  ["Substitution et revenu","Un salaire horaire passe de 10 à 16 : un étudiant accepte des quarts de plus (substitution), tandis qu'un consultant déjà bien payé réduit ses heures (revenu)."]
+ ],
+ 'q2-mono':[
+  ["Prix plafond","Un gouvernement plafonne le prix de l'électricité d'une entreprise en monopole : si le plafond est bien placé, elle produit plus et le prix baisse."],
+  ["Monopole institutionnel","La SAQ : la loi réserve la vente de l'alcool à cette société."]
+ ],
+ 'q2-oligo':[
+  ["Oligopole","Les grands télécoms canadiens (Bell, Rogers, Telus) : quelques firmes, chacune surveille les prix des autres."],
+  ["Cartel","L'OPEP : des pays producteurs qui se coordonnent pour limiter la production et soutenir le prix du pétrole. Chacun est tenté de produire plus que son quota."],
+  ["Paradoxe de Bertrand","Deux stations-service face à face qui vendent la même essence : chacune baisse son prix d'un cent pour attirer tout le monde, jusqu'à ce que le prix égale le coût."]
+ ],
+ 'r12-s11':[
+  ["Transnationale : Toyota","Toyota vend la même plateforme TNGA partout (intégration mondiale), mais adapte ses modèles à chaque marché (adaptation locale)."],
+  ["Zone de libre-échange","L'ACEUM entre le Canada, les États-Unis et le Mexique : les biens circulent sans droits, mais chaque pays garde ses tarifs envers l'extérieur."],
+  ["Règle d'origine","Une voiture assemblée au Mexique n'a droit au tarif préférentiel que si une part assez grande de sa valeur vient de la région (valeur ajoutée régionale)."]
+ ],
+ 'r12-s12':[
+  ["Alliance plutôt que fusion","Une PME québécoise qui veut vendre en Asie s'associe à un distributeur local plutôt que de racheter une entreprise sur place."],
+  ["Impartition","Une entreprise confie sa paie et son support informatique à un prestataire externe."]
+ ],
+ 'q2-travail':[
+  ["Substitution","Un livreur payé plus cher de l'heure accepte un quart du samedi, parce que son temps libre lui coûte plus cher."],
+  ["Revenu","Une infirmière dont le salaire monte réduit ses heures supplémentaires, parce qu'elle gagne déjà assez."],
+  ["Salaire minimum et cotisations","Un restaurant qui voit sa masse salariale augmenter embauche moins de serveurs : la demande de travail baisse."],
+  ["Salaire de réserve","Un étudiant qui refuse un emploi à 8 $ l'heure parce que son revenu de non-travail (bourse, aide familiale) rend l'offre peu attrayante."]
+ ]
+};
+Object.entries(EXAMPLES).forEach(([id,list])=>{
+  const sec=document.getElementById(id); if(!sec)return;
+  const d=document.createElement('details'); d.className='ex'; d.open=true;
+  d.innerHTML='<summary>Exemples concrets</summary><div class="body"><ul>'+
+    list.map(([t,x])=>'<li><span class="who">'+t+'</span><br>'+x+'</li>').join('')+'</ul></div>';
+  sec.appendChild(d);
+});
+
+/* ---------- Sections : durée de lecture + bouton « compris » ---------- */
+const doneSet=new Set(store.get('ecn-done',[]));
+function refreshProgress(){
+  TABS.forEach(t=>{
+    const secs=$$('#tab-'+t+' section[data-sec]');
+    const n=secs.filter(s=>doneSet.has(s.id)).length;
+    $('#c-'+t).textContent=secs.length?n+' / '+secs.length+' compris':'page complète';
+  });
+  $$('.chips a').forEach(a=>a.classList.toggle('done',doneSet.has(a.getAttribute('href').slice(1))));
+  $$('.sec-done button').forEach(b=>{const id=b.closest('section').id;b.textContent=doneSet.has(id)?'✓ Compris. Annuler':'Marquer comme compris';b.classList.toggle('primary',!doneSet.has(id))});
+}
+$$('section[data-sec]').forEach(sec=>{
+  const words=sec.textContent.split(/\s+/).length, min=Math.max(1,Math.round(words/170));
+  const eb=$(':scope>.eyebrow',sec);
+  if(eb)eb.textContent+=' · ≈ '+min+' min';
+  const d=document.createElement('div');d.className='sec-done';
+  const b=document.createElement('button');d.appendChild(b);sec.appendChild(d);
+  b.addEventListener('click',()=>{doneSet.has(sec.id)?doneSet.delete(sec.id):doneSet.add(sec.id);store.set('ecn-done',[...doneSet]);refreshProgress()});
+});
+
+/* ---------- Checklist ---------- */
+(function(){
+  const boxes=$$('#checklist input'), saved=store.get('ecn-s10',{});
+  boxes.forEach(b=>{b.checked=!!saved[b.dataset.k];b.addEventListener('change',update)});
+  function update(){
+    const s={};boxes.forEach(b=>s[b.dataset.k]=b.checked);store.set('ecn-s10',s);
+    const n=boxes.filter(b=>b.checked).length;
+    $('#prog').style.width=(n/boxes.length*100)+'%';
+    $('#progtxt').textContent=n===boxes.length?'Tout est fait !':n+' sur '+boxes.length+' fait';
+  }
+  update();
+})();
+
+/* ---------- Données : cartes ---------- */
+const CARDS={
+ s9:[
+  ["Quelles sont les 5 + 1 forces de Porter ?","Rivalité, nouveaux entrants, substituts, pouvoir des clients, pouvoir des fournisseurs, + croissance et volatilité de la demande."],
+  ["Quelle est la limite du modèle de Porter ?","Il est statique : il ne montre pas où créer un avantage ni comment allier concurrence et coopération."],
+  ["Qu'est-ce qu'un secteur ?","Le groupe de firmes qui fabriquent des produits étroitement substituables avec les mêmes technologies de base."],
+  ["Qu'est-ce qu'un groupe stratégique ?","Des entreprises aux stratégies semblables, qui s'appuient sur les mêmes facteurs de concurrence."],
+  ["À quoi sert l'analyse des groupes stratégiques ?","Évaluer la concurrence intra et inter-groupes, les barrières à la mobilité, et repérer des partenariats."],
+  ["Que compare la chaîne de valeur ?","La structure de coûts interne de l'entreprise à celle de ses concurrents."],
+  ["Activités principales ou de soutien ?","Principales : la séquence qui produit et livre. Soutien : fonctions habilitantes, services internes."],
+  ["Quelles sont les 3 stratégies génériques de Porter ?","Domination par les coûts, différenciation, niche (focalisation)."],
+  ["Quel est le but commun des 3 stratégies ?","Maximiser P − CM (le profit moyen)."],
+  ["Cite 4 types d'économies de coûts.","Échelle, portée, apprentissage, coûts d'organisation."],
+  ["Différenciation vers le bas ou vers le haut ?","Bas : épuration pour minimiser le CM. Haut : sophistication, la valeur monte plus vite que le CM."],
+  ["Quelle stratégie à la naissance et à la croissance ?","Différenciation et innovation de produit/service (plus acquisition ou partenariat en croissance)."],
+  ["Quelle stratégie à la maturité et au déclin ?","Coûts bas et concentration. Maturité : innovation de procédé. Déclin : externalisation, désinvestissement."],
+  ["Comment contrecarrer la menace des substituts ?","Améliorer le rapport qualité/prix."],
+  ["Comment contrecarrer les entrants potentiels ?","Fixer un prix non rentable pour les entrants."]
+ ],
+ s10:[
+  ["Pourquoi l'entreprise existe-t-elle ?","Parce que certaines transactions coûtent moins cher en interne que sur le marché."],
+  ["Qu'est-ce que la firme selon la microéconomie de la gouvernance ?","Un nœud de contrats (transactions externes et internes) et de compétences."],
+  ["Cite 3 hypothèses classiques relâchées.","Rationalité limitée, asymétrie d'information, opportunisme."],
+  ["Définis la gouvernance.","Coordination et contrôle des activités d'une action organisée : le processus d'allocation des ressources."],
+  ["Quelles sont les 3 institutions traditionnelles ?","Marché (compétition), organisation (hiérarchie), clan (solidarité)."],
+  ["De quoi dépendent les coûts de transaction (Williamson) ?","Spécificité des actifs, fréquence, incertitude, durée de vie de la transaction."],
+  ["Qui a identifié les coûts de transaction externes ?","Coase (1937). Williamson (1975) a ajouté les coûts internes."],
+  ["Que dit la théorie des marchés internes ?","L'entreprise fonctionne comme un marché : prix de transfert, primes, commissions, choix de financement."],
+  ["Quand un marché interne est-il concurrentiel ?","Quand le prix de transfert est proche du prix de référence (coût d'opportunité)."],
+  ["Que prédit la théorie des droits de propriété ?","La propriété privée avec le marché assure la meilleure allocation, grâce à la discipline de la prise de contrôle."],
+  ["Que cherche la théorie de l'agence ?","Un système d'incitations qui rapproche les intérêts des propriétaires et des gestionnaires malgré l'asymétrie d'info."],
+  ["Selon la théorie des compétences, l'entreprise est…","Un corps de compétences. On internalise ce qui correspond à ses compétences distinctives."],
+  ["Quels sont les 4 modes de gouvernance ?","Marché, hiérarchie, clan, savoir."],
+  ["Quels choix de frontières existent ?","Faire (intégration), acquérir (fusion), faire faire (impartition), co-faire (alliance)."],
+  ["Quelle est la conclusion de la séance ?","Pas un choix entre théories : une synergie des 4 modes, et des coûts d'organisation à maîtriser."]
+ ],
+ q2:[
+  ["Où un monopole maximise-t-il son profit ?","Là où Cm = Rm. Le prix se lit ensuite sur la courbe de demande."],
+  ["Pourquoi P > Rm pour un monopole à prix unique ?","Pour vendre une unité de plus, il doit baisser le prix sur toutes les unités."],
+  ["Qu'est-ce qu'un monopole naturel ?","Une seule firme sert tout le marché à un coût inférieur à celui de plusieurs firmes."],
+  ["Seuil de fermeture : court terme et long terme ?","Court terme : min du CVM. Long terme : min du CM."],
+  ["Conditions de la discrimination des prix ?","Séparer les consommateurs en marchés distincts et empêcher la revente."],
+  ["Qu'est-ce que l'équilibre de Nash ?","Chaque joueur fait de son mieux compte tenu des stratégies des autres."],
+  ["Qu'est-ce que le dilemme du prisonnier ?","L'intérêt personnel de chacun mène à un résultat collectivement moins bon."],
+  ["Qu'est-ce que le paradoxe de Bertrand ?","Deux firmes en concurrence par les prix arrivent à P = Cm : le résultat de la concurrence parfaite."],
+  ["Substitution et revenu (hausse de salaire) ?","Substitution : on travaille plus. Revenu : on travaille moins (plus de pouvoir d'achat)."],
+  ["Effet d'un salaire minimum ?","Un plancher au-dessus de l'équilibre : surplus d'offre de travail, donc chômage."]
+ ]
+};
+
+/* ---------- Données : quiz ---------- */
+const QUIZ={
+ s9:[
+  {q:"Quelle stratégie convient le mieux à la phase de naissance d'une industrie ?",o:["Domination par les coûts","Différenciation et innovation de produit","Désinvestissement","Concentration"],a:1,why:"Au début, on innove pour survivre à l'incertitude."},
+  {q:"Le modèle de Porter est critiqué parce qu'il est…",o:["Trop complexe","Statique","Trop optimiste","Réservé au secteur public"],a:1,why:"Il ne montre pas où créer un avantage concurrentiel."},
+  {q:"Que compare la chaîne de valeur ?",o:["Les prix des concurrents","Les profits annuels","La structure de coûts interne à celle des concurrents","La taille des marchés"],a:2,why:"Elle sert à comprendre les synergies et le rapport coût/efficacité."},
+  {q:"Laquelle n'est PAS une stratégie générique de Porter ?",o:["Domination par les coûts","Différenciation","Niche","Intégration horizontale"],a:3,why:"Les 3 sont : coûts, différenciation, niche."},
+  {q:"Pour contrecarrer le pouvoir des fournisseurs, on peut…",o:["Multiplier les sources d'approvisionnement","Fixer un prix non rentable","Faire du lobbying","Multiplier les réseaux de distribution"],a:0,why:"Plus de fournisseurs, moins de dépendance."},
+  {q:"En longue période, le seuil de fermeture est…",o:["Le min du CVM","P = min CM","Le max du CM","Rm = Cm"],a:1,why:"Tous les coûts deviennent variables."},
+  {q:"À la maturité d'une industrie, quelle innovation est la plus indiquée ?",o:["Innovation de produit","Innovation de procédé","Aucune","Désinvestissement"],a:1,why:"On cherche à baisser les coûts et conserver sa part de marché."}
+ ],
+ s10:[
+  {q:"Qui a introduit l'idée de coûts de transaction en 1937 ?",o:["Williamson","Coase","Penrose","Jensen"],a:1,why:"Coase (1937). Williamson a développé en 1975."},
+  {q:"Les coûts de transaction augmentent quand…",o:["Les actifs sont très spécifiques","La transaction est unique et simple","L'incertitude diminue","Les actifs sont standards"],a:0,why:"Spécificité, fréquence, incertitude et durée les font monter."},
+  {q:"Les options d'actions pour cadres servent surtout à…",o:["Réduire les impôts","Rapprocher les intérêts des gestionnaires et des propriétaires","Augmenter le prix de transfert","Remplacer le conseil d'administration"],a:1,why:"C'est la théorie de l'agence."},
+  {q:"Pour la théorie des compétences, on internalise…",o:["Tout ce qui est rentable","Ce qui correspond à ses compétences distinctives","Seulement les activités administratives","Ce que le marché refuse"],a:1,why:"On garde ce qui fait notre force unique."},
+  {q:"Quel n'est PAS un des 4 modes de gouvernance ?",o:["Marché","Clan","Savoir","Monopole"],a:3,why:"Les 4 : marché, hiérarchie, clan, savoir."},
+  {q:"Un prix de transfert proche du prix de référence signifie un marché interne…",o:["Peu concurrentiel","Très concurrentiel","Inexistant","Public"],a:1,why:"Plus on s'approche du prix de référence, plus c'est concurrentiel."},
+  {q:"Selon la théorie des droits de propriété, qu'est-ce qui discipline les gestionnaires du privé ?",o:["La menace de prise de contrôle","Le salaire fixe","La contrainte budgétaire faible","Le clan"],a:0,why:"Leur emploi est en jeu : c'est le marché contestable."}
+ ],
+ vf:[
+  {q:"1. En concurrence parfaite, Rm = Rmoy puisque toutes les unités sont vendues au même prix.",a:0,why:"Preneur de prix : P = Rm = Rmoy."},
+  {q:"2. Court terme : seuil de fermeture = min CVM. Long terme : = min CM.",a:0,why:"À court terme les coûts fixes sont déjà payés. À long terme tout est variable."},
+  {q:"3. En longue période, le seuil de fermeture est le minimum du CVM.",a:1,why:"C'est le min du CM à long terme, pas du CVM."},
+  {q:"4. Contrairement à un producteur concurrentiel, un monopole peut demander le prix qu'il veut.",a:1,why:"La demande le limite : s'il monte son prix, il vend moins."},
+  {q:"5. Il y a monopole naturel quand une seule firme sert tout le marché à un coût plus bas que plusieurs firmes.",a:0,why:"C'est la définition."},
+  {q:"6. La SAQ est un monopole naturel, Hydro-Québec est un monopole institutionnel.",a:1,why:"C'est inversé. Hydro-Québec ≈ monopole naturel (réseau). La SAQ est un monopole institutionnel (créé par la loi)."},
+  {q:"7. Pour un monopole, le prix excède toujours la recette marginale.",a:0,why:"Prix unique : pour vendre plus, il baisse le prix sur toutes les unités, donc Rm < P. Exception : discrimination parfaite (P = Rm)."},
+  {q:"8. Pour que la discrimination soit efficace, le monopole doit séparer les consommateurs en marchés distincts.",a:0,why:"Et empêcher la revente."},
+  {q:"9. La discrimination des prix n'est pas réservée au monopole.",a:0,why:"On la voit aussi en oligopole et en concurrence monopolistique (avions, cinémas)."},
+  {q:"10. La discrimination selon le groupe d'âge est une discrimination parfaite.",a:1,why:"C'est une discrimination par groupes (imparfaite). Parfaite = chaque client paie son prix maximal."},
+  {q:"11. L'office du tourisme (prix plus élevé aux étrangers) pratique une discrimination parfaite, contrairement au taximan qui négocie chaque course.",a:1,why:"C'est inversé : l'office discrimine par groupe. Le taximan qui négocie chaque course se rapproche de la discrimination parfaite."},
+  {q:"12. Un cartel donne un niveau de production proche de la concurrence parfaite.",a:1,why:"Le cartel agit comme un monopole : il produit moins et vend plus cher."},
+  {q:"13. Un élément clé de l'oligopole est la tension entre coopération et intérêt personnel.",a:0,why:"Coopérer rapporte au groupe, tricher rapporte à chacun."},
+  {q:"14. Un fort impôt sur le revenu baisse l'offre de travail si l'élasticité est positive et élevée, et un salaire minimum plus des cotisations baissent la demande de travail.",a:0,why:"Impôt : l'effet de substitution domine. Salaire min et cotisations : le travail coûte plus cher, donc la demande baisse."},
+  {q:"15. Contrairement à la concurrence parfaite, il n'y a pas de perte pour le monopole preneur de prix qui discrimine.",a:1,why:"Le monopole crée une perte sèche pour la société (sauf discrimination parfaite). Et il n'est pas preneur de prix."},
+  {q:"16. La courbe d'offre de travail ne part pas de l'origine : il existe un revenu de réserve en dessous duquel on n'entre pas sur le marché du travail.",a:0,why:"C'est le salaire de réserve."}
+ ],
+ qcm:[
+  {q:"1. Dilemme du prisonnier :",o:["L'intérêt personnel mène à un résultat collectivement inférieur","Les joueurs font fi de leur intérêt","Intérêt personnel mal avisé","Le bien du groupe l'emporte","Le bien-être de la société est maximisé"],a:0,why:"Chacun suit son intérêt, et le résultat collectif est pire."},
+  {q:"2. Par rapport à la concurrence parfaite, l'oligopole tend à :",o:["Surproduire et vendre trop cher","Sous-produire et vendre trop cher","Surproduire et ne pas vendre assez cher","Sous-produire et ne pas vendre assez cher","Sous-produire puis surproduire"],a:1,why:"Comme un monopole partiel : moins de production, prix plus haut."},
+  {q:"3. Un équilibre de Nash se produit quand :",o:["Un joueur respecte l'accord tant que les autres le respectent","Un joueur ne respecte plus l'accord jusqu'à ce que les autres le respectent","Tous respectent un accord de collusion","Chaque joueur agit de la meilleure façon compte tenu des stratégies des autres","Un joueur choisit la meilleure stratégie quelles que soient celles des autres"],a:3,why:"La différence avec la dernière option : ici on tient compte de ce que font les autres."},
+  {q:"4. Un monopole qui maximise son profit produit où :",o:["Cm = Rm","Cm = P","P = CTM","P > CTM","Aucune"],a:0,why:"Règle d'or : Cm = Rm."},
+  {q:"5. Un monopole détermine le prix :",o:["Où Cm = Rm","À partir de la demande, selon la quantité où Cm = Rm","Où offre = demande","Où Rm = demande","Aucune"],a:1,why:"On trouve la quantité avec Cm = Rm, puis on monte à la demande pour lire le prix."},
+  {q:"6. Quel cas donne un profit économique nul ?",o:["Prix fondé sur le coût marginal","Prix fondé sur le coût moyen","Prix fondé sur le coût variable","Prix fondé sur le coût fixe","Discrimination des prix"],a:1,why:"P = CM donne un profit nul."},
+  {q:"7. Un monopole résulte :",o:["De barrières à l'entrée","De la cupidité du vendeur","Du manque d'intérêt des concurrents","D'une réglementation inadéquate","Toutes ces réponses"],a:0,why:"Ce sont les barrières à l'entrée qui créent le monopole."},
+  {q:"8. La discrimination des prix par un monopole tend à :",o:["Réduire la perte sèche","Accroître l'efficience économique","Rapprocher la production de celle de la concurrence","Réduire l'écart entre Rm et le prix","Toutes ces réponses"],a:4,why:"Les 4 énoncés sont vrais."},
+  {q:"9. Par rapport à un marché concurrentiel de même structure de coûts, un monopole va :",o:["Prix plus faible, produire moins","Prix plus faible, produire plus","Prix plus élevé, produire moins","Prix plus élevé, produire plus","Prix plus faible puis plus élevé"],a:2,why:"Moins de production, prix plus élevé."},
+  {q:"10. Exemple(s) de discrimination des prix :",o:["Cinéma moins cher pour enfants et aînés","Billet d'avion moins cher si le séjour inclut la nuit du samedi","Aide financière aux étudiants dans le besoin","A et B","A, B et C"],a:4,why:"L'aide financière fait aussi payer moins cher ceux qui ont moins les moyens. À confirmer avec ton prof (A et B est l'autre candidate)."},
+  {q:"11. Les pouvoirs politiques peuvent remédier au monopole :",o:["En le rendant plus concurrentiel","En le réglementant","En le transformant en entreprise publique","Toutes ces réponses","Aucune"],a:3,why:"Les trois moyens existent."},
+  {q:"12. Exemple d'un facteur de production :",o:["Les métallurgistes embauchés","Les fonderies","Le minerai de fer","Aucune","Toutes ces réponses"],a:4,why:"Travail (métallurgistes), capital (fonderies), ressource naturelle (minerai). À confirmer avec ton prof."},
+  {q:"13. Quel groupe ne serait PAS favorable à des restrictions à l'immigration pour réduire l'offre de travail ?",o:["Les employeurs","Les propriétaires de logements","Les travailleurs canadiens","A et B","Toutes"],a:3,why:"Les employeurs paieraient des salaires plus hauts, et les propriétaires verraient la demande de logements baisser. Les travailleurs y gagneraient."},
+  {q:"15. L'effet cumulatif d'une hausse du taux de salaire sur l'offre de travail est :",o:["Une hausse des heures (substitution)","Une baisse des heures (revenu)","Ambigu : dépend de l'élasticité des heures travaillées","Toutes bonnes","Toutes mauvaises"],a:2,why:"Les deux effets s'opposent, donc le résultat net dépend de l'élasticité."}
+ ]
+};
+
+/* ---------- Cartes ---------- */
+function buildCards(el,cards){
+  let i=0,back=false;
+  el.innerHTML='<div class="sheet flash" tabindex="0" role="button" aria-label="Retourner la carte"><div></div></div>'+
+    '<div class="row"><button data-a="p">← Précédente</button><button class="primary" data-a="f">Retourner</button><button data-a="n">Suivante →</button><span class="eyebrow" style="margin-left:auto" data-c></span></div>';
+  const q=$('.flash div',el),c=$('[data-c]',el);
+  function render(){
+    const [a,b]=cards[i];
+    q.innerHTML=back?('<strong>'+b+'</strong><span class="hint">Réponse</span>'):(a+'<span class="hint">Clique pour voir la réponse</span>');
+    c.textContent=(i+1)+' / '+cards.length;
+  }
+  const flip=()=>{back=!back;render()};
+  $('.flash',el).addEventListener('click',flip);
+  $('.flash',el).addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();flip()}});
+  $('[data-a="f"]',el).addEventListener('click',flip);
+  $('[data-a="n"]',el).addEventListener('click',()=>{i=(i+1)%cards.length;back=false;render()});
+  $('[data-a="p"]',el).addEventListener('click',()=>{i=(i-1+cards.length)%cards.length;back=false;render()});
+  render();
+}
+
+/* ---------- Quiz ---------- */
+function buildQuiz(el,items,isVF){
+  let i=0,score=0,done=false;
+  function show(){
+    if(i>=items.length){
+      const p=score/items.length;
+      el.innerHTML='<h3>Score : '+score+' sur '+items.length+' '+(p===1?'🎉':p>=.7?'👍':'💪')+'</h3><p>'+(p===1?'Sans faute.':p>=.7?'Solide. Relis seulement les explications des erreurs.':'Pas grave : refais le quiz après avoir relu la section.')+'</p><button class="primary" data-r>Recommencer</button>';
+      $('[data-r]',el).onclick=()=>{i=0;score=0;show()};
+      return;
+    }
+    done=false;
+    const cur=items[i], opts=isVF?['Vrai','Faux']:cur.o;
+    el.innerHTML='<span class="eyebrow">Question '+(i+1)+' sur '+items.length+'</span><h3 style="margin-top:8px;font-family:var(--body);font-weight:700">'+cur.q+'</h3>'+
+      opts.map((t,k)=>'<button class="opt" data-k="'+k+'">'+t+'</button>').join('')+'<div data-f aria-live="polite"></div>';
+    $$('.opt',el).forEach(b=>b.onclick=()=>{
+      if(done)return;done=true;
+      const k=+b.dataset.k;
+      if(k===cur.a){score++;b.classList.add('right')}
+      else{b.classList.add('wrong');$('[data-k="'+cur.a+'"]',el).classList.add('right')}
+      $('[data-f]',el).innerHTML='<div class="why"><strong>'+(k===cur.a?'Bien vu. ':'Pas tout à fait. ')+'</strong>'+cur.why+'</div>'+
+        '<button class="primary" data-n style="margin-top:12px">'+(i+1<items.length?'Suivante →':'Voir le score')+'</button>';
+      $('[data-n]',el).onclick=()=>{i++;show()};
+    });
+  }
+  show();
+}
+$$('[data-cards]').forEach(el=>buildCards(el,CARDS[el.dataset.cards]));
+$$('[data-quiz]').forEach(el=>buildQuiz(el,QUIZ[el.dataset.quiz],el.dataset.quiz==='vf'));
+
+/* ---------- Figure héros : offre et demande ---------- */
+(function(){
+  const svg=$('#hero-fig'), sl=$('#shift');
+  const X=Q=>45+Q*3, Y=P=>235-P*1.5;
+  function draw(){
+    const D=+sl.value;                      // ordonnée à l'origine de la demande
+    const Qe=(D-15)/1.4, Pe=15+0.6*Qe;      // équilibre
+    const dEnd=D-0.8*100;
+    svg.innerHTML=
+     '<defs><clipPath id="cp"><rect x="45" y="20" width="310" height="215"/></clipPath></defs>'+
+     '<path class="ax" d="M45 20 V235 H355"/>'+
+     '<text x="8" y="16">Prix</text><text x="318" y="256">Quantité</text>'+
+     '<g clip-path="url(#cp)">'+
+       '<line x1="'+X(0)+'" y1="'+Y(15)+'" x2="'+X(100)+'" y2="'+Y(75)+'" stroke="var(--supply)" stroke-width="4" stroke-linecap="round"/>'+
+       '<line x1="'+X(0)+'" y1="'+Y(D)+'" x2="'+X(100)+'" y2="'+Y(dEnd)+'" stroke="var(--demand)" stroke-width="4" stroke-linecap="round"/>'+
+     '</g>'+
+     '<line class="guide" x1="45" y1="'+Y(Pe)+'" x2="'+X(Qe)+'" y2="'+Y(Pe)+'"/>'+
+     '<line class="guide" x1="'+X(Qe)+'" y1="'+Y(Pe)+'" x2="'+X(Qe)+'" y2="235"/>'+
+     '<circle cx="'+X(Qe)+'" cy="'+Y(Pe)+'" r="8" fill="var(--hl)" stroke="var(--ink)" stroke-width="2.5"/>'+
+     '<text x="'+(X(100)-62)+'" y="'+(Y(75)-8)+'" fill="var(--supply)" style="fill:var(--supply)">Offre</text>'+
+     '<text x="52" y="'+Math.max(34,Y(D)-8)+'" style="fill:var(--demand)">Demande</text>';
+    $('#r-p').textContent='Prix P* = '+Pe.toFixed(0);
+    $('#r-q').textContent='Quantité Q* = '+Qe.toFixed(0);
+  }
+  sl.addEventListener('input',draw);draw();
+})();
+
+/* ---------- Figure : concurrence contre monopole ---------- */
+(function(){
+  const svg=$('#mono-fig'), sl=$('#cm'); let mode='conc';
+  const X=Q=>50+Q*3.3, Y=P=>250-P*2.1;
+  const poly=(pts,fill)=>'<polygon points="'+pts.map(p=>X(p[0]).toFixed(1)+','+Y(p[1]).toFixed(1)).join(' ')+'" fill="'+fill+'" stroke="var(--ink)" stroke-width="1" fill-opacity=".9"/>';
+  function draw(){
+    const c=+sl.value, Qc=(100-c)/1.5, Pc=100-Qc, Qm=(100-c)/2.5, Pm=100-Qm, Cmm=c+0.5*Qm;
+    let areas='',cs,ps,dwl=0;
+    if(mode==='conc'){
+      areas=poly([[0,100],[0,Pc],[Qc,Pc]],'var(--demand-soft)')+poly([[0,Pc],[Qc,Pc],[0,c]],'var(--supply-soft)');
+      cs=.5*Qc*(100-Pc); ps=.5*Qc*(Pc-c);
+    }else{
+      areas=poly([[0,100],[0,Pm],[Qm,Pm]],'var(--demand-soft)')+
+            poly([[0,Pm],[Qm,Pm],[Qm,Cmm],[0,c]],'var(--supply-soft)')+
+            poly([[Qm,Pm],[Qc,Pc],[Qm,Cmm]],'var(--bad-soft)');
+      cs=.5*Qm*(100-Pm); ps=Pm*Qm-(c*Qm+.25*Qm*Qm); dwl=.5*(Qc-Qm)*(Pm-Cmm);
+    }
+    const Q=mode==='conc'?Qc:Qm, P=mode==='conc'?Pc:Pm;
+    svg.innerHTML=areas+
+      '<path class="ax" d="M50 20 V250 H400"/>'+
+      '<text x="8" y="16">Prix</text><text x="340" y="272">Quantité</text>'+
+      '<line x1="'+X(0)+'" y1="'+Y(100)+'" x2="'+X(100)+'" y2="'+Y(0)+'" stroke="var(--demand)" stroke-width="3.5"/>'+
+      '<line x1="'+X(0)+'" y1="'+Y(100)+'" x2="'+X(50)+'" y2="'+Y(0)+'" stroke="var(--demand)" stroke-width="2.5" stroke-dasharray="6 5"/>'+
+      '<line x1="'+X(0)+'" y1="'+Y(c)+'" x2="'+X(100)+'" y2="'+Y(c+50)+'" stroke="var(--supply)" stroke-width="3.5"/>'+
+      '<text x="'+X(86)+'" y="'+(Y(10)+14)+'" style="fill:var(--demand)">D</text>'+
+      '<text x="'+X(48)+'" y="'+(Y(0)-6)+'" style="fill:var(--demand)">Rm</text>'+
+      '<text x="'+X(90)+'" y="'+(Y(c+46)-8)+'" style="fill:var(--supply)">Cm</text>'+
+      '<line class="guide" x1="50" y1="'+Y(P)+'" x2="'+X(Q)+'" y2="'+Y(P)+'"/>'+
+      '<line class="guide" x1="'+X(Q)+'" y1="'+Y(P)+'" x2="'+X(Q)+'" y2="250"/>'+
+      '<circle cx="'+X(Q)+'" cy="'+Y(P)+'" r="7" fill="var(--hl)" stroke="var(--ink)" stroke-width="2.5"/>'+
+      '<text x="'+(X(Q)-8)+'" y="266">Q</text><text x="14" y="'+(Y(P)+4)+'">P</text>';
+    $('#mono-read').innerHTML='<span>Q = '+Q.toFixed(0)+'</span><span>P = '+P.toFixed(0)+'</span><span>SC = '+cs.toFixed(0)+'</span><span>SP = '+ps.toFixed(0)+'</span><span>Perte sèche = '+dwl.toFixed(0)+'</span>';
+    $('#m-conc').classList.toggle('primary',mode==='conc');
+    $('#m-mono').classList.toggle('primary',mode==='mono');
+  }
+  $('#m-conc').onclick=()=>{mode='conc';draw()};
+  $('#m-mono').onclick=()=>{mode='mono';draw()};
+  sl.addEventListener('input',draw);draw();
+})();
+
+const slidesDB = {
+            "Séance 09.pdf": [
+                { slide: 3, title: "Acétate 3 • Modèle des 5+1 forces de Porter", tldr: "5 forces sectorielles + 1 environnement élargi (pouvoirs publics, technologie, demande).", quote: "Cinq forces : pouvoir de négociation des clients, menace de nouveaux entrants, rivalité entre les concurrents, pouvoir de négociation des fournisseurs, pression des substituts ; complétées par l'intervention réglementaire/gouvernementale, les changements technologiques et la croissance/volatilité de la demande." },
+                { slide: 4, title: "Acétate 4 • Lacunes du modèle de Porter", tldr: "Modèle statique ; à compléter par les groupes stratégiques et les chaînes de valeur.", quote: "Le modèle est jugé statique et ne favorise pas une analyse permettant d'identifier les espaces libres de création d'avantages concurrentiels, ni des possibilités d'allier concurrence et coopération." },
+                { slide: 5, title: "Acétate 5 • Groupes stratégiques (1)", tldr: "Firmes partageant des caractéristiques stratégiques semblables (gamme, prix, intégration).", quote: "Les groupes stratégiques réunissent les organisations dont les caractéristiques stratégiques sont semblables, qui suivent des stratégies comparables ou qui s'appuient sur les mêmes facteurs de concurrence." },
+                { slide: 8, title: "Acétate 8 • Chaîne de valeur de Porter", tldr: "Activités de base (logistique, opérations, marketing, services) + soutien (infrastructure, GRH, techno, achats).", quote: "Activités de soutien : infrastructure de l'entreprise, gestion des ressources humaines, développement technologique, achats. Activités de base : logistique entrante, opérations, logistique sortante, marketing/ventes, services -> marge." },
+                { slide: 9, title: "Acétate 9 • Trois stratégies concurrentielles génériques", tldr: "Domination par les coûts, différenciation, focalisation/niche (maximiser P - CM).", quote: "Trois stratégies génériques : domination par les coûts, différenciation, niche (spécialisation/focalisation/créneau). Objectif commun : maximiser P - CM." },
+                { slide: 10, title: "Acétate 10 • Domination par les coûts", tldr: "Économies d'échelle, de portée (envergure), d'apprentissage et d'organisation.", quote: "Sources : volume d'activités, actifs partagés, complémentarité, subsidiarité. Types : économies d'échelle, économies de portée, économies d'apprentissage, économies de coûts d'organisation, déséconomies de croissance et de complexité." },
+                { slide: 11, title: "Acétate 11 • Différenciation vers le haut / vers le bas", tldr: "Vers le bas = épuration (baisser CM) ; vers le haut = sophistication (valeur > hausse CM).", quote: "Différenciation vers le bas pour minimiser le coût moyen (épuration). Différenciation vers le haut pour une hausse de valeur plus que proportionnelle à celle du coût moyen (sophistication)." },
+                { slide: 13, title: "Acétate 13 • Cycle de vie de l'industrie", tldr: "Naissance : différenciation ; maturité : coûts/procédé ; déclin : coûts/externalisation.", quote: "Naissance : survivre à l'incertitude (différenciation/innovation produit). Croissance : part de marché. Maturité : domination par les coûts/procédé. Déclin : volume et baisse des coûts (domination par les coûts, externalisation/désinvestissement)." },
+                { slide: 14, title: "Acétate 14 • Joutes concurrentielles (5+1 forces)", tldr: "Substituts -> Q/P ; entrants -> prix non rentable ; acheteurs -> distribution ; fournisseurs -> approvisionnement ; État -> lobbying ; rivalité -> innovation.", quote: "Menaces des substituts : amélioration du rapport Q/P. Menace des entrants potentiels : fixation d'un prix non rentable pour entrants. Pouvoir des acheteurs : multiplication des réseaux de distribution. Pouvoir des fournisseurs : multiplication des sources d'approvisionnement. Rôle des pouvoirs publics : capacité de lobbying. Intensité concurrentielle : capacité d'innovation." },
+                { slide: 15, title: "Acétate 15 • Stratégies hybrides", tldr: "Combinaison complémentaire des stratégies génériques pour durer.", quote: "En pratique, pour créer et conserver le maximum d'avantages concurrentiels, l'entreprise combine les stratégies (stratégies hybrides) de manière complémentaire." }
+            ],
+            "Séance 10.pdf": [
+                { slide: 3, title: "Acétate 3 • Coûts externes vs coûts internes / de mandat", tldr: "Coûts externes (marché, contrats, litiges) vs coûts internes (mandat : trucage, dérobade, surveillance).", quote: "Coûts de transactions externes : recherche des fournisseurs, rédaction et gestion des contrats, litiges, vulnérabilité techno-commerciale. Coûts internes : coûts de mandat (trucage, dérobade), gestion des coûts de mandat, surveillance et résolution des conflits." },
+                { slide: 4, title: "Acétate 4 • Hypothèses relâchées", tldr: "Rationalité limitée, asymétrie d'information et opportunisme.", quote: "Rationalité limitée, asymétrie d'information entre membres de l'organisation, propension à l'opportunisme." },
+                { slide: 6, title: "Acétate 6 • Marché, hiérarchie et clan", tldr: "Marché (prix, transfert), hiérarchie (règles, budgets, contrôle), clan (solidarité, valeurs).", quote: "Marché (compétition) : prix de transfert, bonus. Organisation (hiérarchie) : directives, règles, budgets, surveillance directe. Clan (solidarité) : traditions, valeurs partagées, socialisation." },
+                { slide: 8, title: "Acétate 8 • Marché interne des biens et services", tldr: "Divisions autonomes échangeant à un prix de transfert proche du prix de référence.", quote: "Des centres de profit et de coûts plutôt autonomes s'échangent des produits au prix de transfert (cession interne)." },
+                { slide: 9, title: "Acétate 9 • Marchés internes du travail et du capital", tldr: "Travail : pièce/tâche, primes, mobilité. Capital : rationnement fonds, incitations, prise de contrôle.", quote: "Marché interne du travail : rémunération à la pièce/tâche, commissions, primes, performance des cadres, recrutement/promotion interne ou externe. Marché interne du capital : rationnement des fonds, incitations financières, congédiement par prise de contrôle." },
+                { slide: 11, title: "Acétate 11 • Coûts de transaction (Williamson) & frontières", tldr: "Croissent avec spécificité des actifs, fréquence, incertitude, durée de vie.", quote: "Coûts de transaction fonction croissante de : spécificité des actifs, fréquence des transactions, incertitude, durée de vie. Délimitent : faire soi-même (internalisation), acquérir (A&F), faire faire (impartition/sous-traitance), co-faire (alliance)." },
+                { slide: 12, title: "Acétate 12 • Droits de propriété & marchés contestables", tldr: "Propriété privée + discipline de prise de contrôle sanctionnant les dirigeants.", quote: "Effet de la discipline de prise de contrôle imposée par le marché aux gestionnaires de l'entreprise privée en mettant en jeu leur emploi." },
+                { slide: 13, title: "Acétate 13 • Théorie des mandats (agence)", tldr: "Aligner les intérêts propriétaires/gestionnaires (incitations, options d'actions).", quote: "Système d'incitations rapprochant les intérêts divergents des propriétaires et gestionnaires en contexte d'asymétrie d'information ; contrats incomplets." },
+                { slide: 14, title: "Acétate 14 • Compétences distinctives & 4e mode (savoir)", tldr: "La firme est un corps de compétences (Penrose) ; 4e mode : le savoir (argumentatif/cognitif).", quote: "Selon la théorie de la ressource (Penrose, 1959) et la firme évolutionniste, l'entreprise est un corps de compétences plutôt qu'un nœud de contrats. Quatrième mode de gouvernance : le savoir." },
+                { slide: 15, title: "Acétate 15 • Synergie des 4 modes & coûts d'organisation", tldr: "Synergie marché + hiérarchie + clan + savoir ; coûts d'organisation au-delà des coûts directs.", quote: "Seule une synergie optimisée des quatre modes de gouvernance conduit à une mise en œuvre efficace. Au-delà des coûts de production, il existe des coûts d'organisation à maîtriser." }
+            ],
+            "séance 11 révisée.pdf": [
+                { slide: 5, title: "Acétate 5 • 3 modèles automobiles (Tesla, Stellantis, Toyota)", tldr: "Toyota est transnationale (hybride : intégration mondiale élevée + adaptation locale forte).", quote: "Globale (Tesla) : intégration mondiale forte, adaptation locale faible. Multinationale (Stellantis) : adaptation locale forte, intégration mondiale faible. Transnationale (Toyota) : hybride intégration mondiale élevée ET forte adaptation locale (TNGA)." },
+                { slide: 6, title: "Acétate 6 • Cinq degrés d'intégration économique (Balassa)", tldr: "1. ZLE -> 2. Union douanière -> 3. Marché commun -> 4. Union éco/monétaire -> 5. Union politique.", quote: "1) Zone de libre-échange ; 2) Union douanière (tarif extérieur commun) ; 3) Marché commun (biens, capitaux, personnes) ; 4) Union économique et monétaire ; 5) Union politique (supranationalité)." },
+                { slide: 7, title: "Acétate 7 • Blocs régionaux & « bol de spaghetti » africain", tldr: "UE = plus intégrée ; ACEM = superficielle ; chevauchement des blocs en Afrique freine la ZLECAf.", quote: "Union européenne : intégration la plus poussée. MERCOSUR : union douanière. ACEM : intégration superficielle. Le « bol de spaghetti » africain freine la ZLECAf." },
+                { slide: 9, title: "Acétate 9 • Réponses des entreprises aux ZLE", tldr: "RSE, A&F, R&D/innovation, portée de la firme, IDE, gestion des filiales.", quote: "Réponses aux ZLE (Tereraho, 2017) : responsabilité sociale, acquisitions et fusions, R&D et innovation, portée de l'entreprise, IDE, gestion des filiales." },
+                { slide: 11, title: "Acétate 11 • Règles d'origine (RdO)", tldr: "Entièrement obtenu, changement de tarif, valeur ajoutée régionale, processus spécifique, combinaison.", quote: "Règles d'origine : entièrement obtenu, changement de tarif, valeur ajoutée régionale (contenu local), processus de fabrication spécifique, combinaison des règles." },
+                { slide: 15, title: "Acétate 15 • Annexe 1-1 : Toyota TNGA", tldr: "Échelle (châssis/moteurs TNGA), envergure (R&D hybride Yaris au RAV4), apprentissage (TPS/Lean).", quote: "Standardisation mondiale châssis/groupes motopropulseurs (TNGA), mutualisation R&D hybride de la Yaris au RAV4, transfert TPS entre usines et fournisseurs, brevets clés gardés au Japon, alliances Panasonic/BYD." },
+                { slide: 16, title: "Acétate 16 • Annexe 1-2 : Gouvernance Toyota", tldr: "Hiérarchie (audit sécurité), marché (mise en concurrence), clan (Kaizen/Andon), savoir (Global Production Centers).", quote: "Contrôle hiérarchique (audit sécurité), contrôle compétitif/marché, contrôle clanique (Kaizen, corde Andon), gestion bidirectionnelle du savoir." },
+                { slide: 18, title: "Acétate 18 • Annexe II : CETA & appellations contrôlées", tldr: "Opportunité vins/spiritueux et fromages (indications géographiques) ; défis viandes/produits laitiers.", quote: "Opportunités CETA : vins et spiritueux, produits laitiers/fromages, reconnaissance des indications géographiques. Défis : viandes bovine et porcine, lait/fromage/volaille." }
+            ],
+            "Révision 9-12 micro economie.pdf": [
+                { slide: 1, title: "Pages 1–2 • Partie A.I Vrai ou Faux (i à xv)", tldr: "Questions (i) à (xv) sur coûts d'organisation, lobbying, hybrides, coûts de transaction, Toyota, RdO.", quote: "Partie A.I : Vrai ou faux, pourquoi ? (i) à (xv) couvrant Séances 09, 10 et 11." },
+                { slide: 3, title: "Pages 3–5 • Partie A.II Choix multiples (1 à 8)", tldr: "QCM 1 à 8 sur coûts de transaction, 4 modes de gouvernance, marchés internes, RH globales, ZLE, stratégies, économies.", quote: "Partie A.II : Choix multiple (1 à 8)." },
+                { slide: 6, title: "Pages 6–7 • Partie A.III Questions courtes (1 à 12)", tldr: "Mécanismes contrôle, 3 marchés internes, Balassa, bol de spaghetti, Williamson, transport aérien, Uber/Airbnb, TNGA, tableau Porter.", quote: "Partie A.III : Questions à réponse courte (1 à 12)." },
+                { slide: 8, title: "Pages 8–9 • Partie B Séances 09, 10 et 12", tldr: "Vrai/Faux 1–3, QCM 1–2, questions courtes 1–3 (alliances vs A&F, impartition/sous-traitance/délocalisation, paradoxe profit).", quote: "Partie B : Séances 09, 10 et 12 (Vrai/Faux, QCM, questions à réponse courte)." }
+            ]
+        };
+
+        // Base complète des exercices avec réponse courte et lien exact vers les PDF
+        const exercisesData = [
+            { cat: "A_VF", id: "A.I.(i)", isTrap: false, q: "(i) En référence à l'équation du profit, les théories de la gouvernance restent muettes quant à l'existence des coûts d'organisation au-delà des coûts de production.", ans: "FAUX", tldr: "Au-delà des coûts de production, il existe des coûts d'organisation à maîtriser même s'ils ne figurent pas comme tels dans les coûts directs.", pdf: "Séance 10.pdf", slide: 15 },
+            { cat: "A_VF", id: "A.I.(ii)", isTrap: false, q: "(ii) La menace des entrants potentiels peut être combattue par la fixation d'un prix non rentable pour entrants et du lobbying pour une intervention des pouvoirs publics.", ans: "VRAI", tldr: "Un prix limite dissuasif et le lobbying réglementaire limitent l'entrée ou modifient les conditions d'accès au marché.", pdf: "Séance 09.pdf", slide: 14 },
+            { cat: "A_VF", id: "A.I.(iii)", isTrap: true, q: "(iii) De nos jours, la combinaison de la stratégie de domination par les coûts et de la stratégie de différenciation n'est pas un élément essentiel au succès dans plusieurs industries.", ans: "FAUX", tldr: "Piège de négation : les stratégies hybrides combinent coûts maîtrisés et différenciation pour conserver l'avantage concurrentiel.", pdf: "Séance 09.pdf", slide: 15 },
+            { cat: "A_VF", id: "A.I.(iv)", isTrap: false, q: "(iv) La mondialisation et la constitution des blocs économiques régionaux sont deux phénomènes non liés parce que des entreprises internationales existent depuis longtemps.", ans: "FAUX", tldr: "L'intégration régionale s'inscrit dans la mondialisation et sert de tremplin ou de protection face à la concurrence mondiale.", pdf: "séance 11 révisée.pdf", slide: 6 },
+            { cat: "A_VF", id: "A.I.(v)", isTrap: false, q: "(v) Si les coûts de transaction avec un fournisseur deviennent de plus en plus élevés, l'entreprise devrait envisager une acquisition de ce fournisseur.", ans: "VRAI", tldr: "L'internalisation (acquisition/intégration) réduit les coûts de recherche, de négociation et de litige liés au marché externe.", pdf: "Séance 10.pdf", slide: 11 },
+            { cat: "A_VF", id: "A.I.(vi)", isTrap: false, q: "(vi) La Théorie des coûts de transaction mène à la conclusion que l'augmentation des coûts de transaction milite en faveur des acquisitions/fusions d'activités.", ans: "VRAI", tldr: "Quand les coûts de transaction externes augmentent, l'intégration ou l'acquisition devient plus avantageuse que le recours au marché.", pdf: "Séance 10.pdf", slide: 11 },
+            { cat: "A_VF", id: "A.I.(vii)", isTrap: false, q: "(vii) La Théorie des mandats (de l'agence) mène à la conclusion que l'augmentation des coûts de complexité milite en faveur de l'externalisation des activités.", ans: "VRAI", tldr: "La croissance interne accroît la complexité et les coûts de mandat (trucage, dérobade, contrôle), favorisant l'externalisation d'activités non essentielles.", pdf: "Séance 10.pdf", slide: 3 },
+            { cat: "A_VF", id: "A.I.(viii)", isTrap: false, q: "(viii) La Théorie de la ressource mène à la conclusion que la réalisation des bénéfices d'une internalisation ou externalisation dépend des compétences de la firme et de sa capacité à gérer la complexité.", ans: "VRAI", tldr: "L'entreprise doit internaliser ce qui correspond à ses compétences distinctives et à sa capacité de pilotage.", pdf: "Séance 10.pdf", slide: 14 },
+            { cat: "A_VF", id: "A.I.(ix)", isTrap: false, q: "(ix) Selon la théorie des droits de propriété et des marchés contestables, l'effet de discipline de prise de contrôle imposée par le marché aux gestionnaires privés soutient l'efficacité de la propriété privée.", ans: "VRAI", tldr: "La menace de prise de contrôle met en jeu l'emploi des dirigeants privés, incitant à une meilleure allocation des ressources.", pdf: "Séance 10.pdf", slide: 12 },
+            { cat: "A_VF", id: "A.I.(x)", isTrap: false, q: "(x) L'intégration régionale fait partie intégrante de la mondialisation et constitue une étape vers l'insertion dans celle-ci.", ans: "VRAI", tldr: "Les accords régionaux permettent de gagner en taille et en compétitivité avant l'ouverture plus large.", pdf: "séance 11 révisée.pdf", slide: 6 },
+            { cat: "A_VF", id: "A.I.(xi)", isTrap: true, q: "(xi) Lors des négociations du CETA, l'« appellation contrôlée » des vins et spiritueux européens était perçue comme une opportunité pour les entreprises.", ans: "VRAI", tldr: "L'acétate 18 liste les vins et spiritueux et la reconnaissance des indications géographiques parmi les opportunités pour les PME françaises.", pdf: "séance 11 révisée.pdf", slide: 18 },
+            { cat: "A_VF", id: "A.I.(xii)", isTrap: false, q: "(xii) Les entreprises mondialisées ont intérêt à pousser vers une intégration plus poussée car les règles d'origine y sont assouplies, réduisant coûts de production et de transaction.", ans: "VRAI", tldr: "Un degré d'intégration supérieur allège les contraintes de règles d'origine et les coûts administratifs associés.", pdf: "séance 11 révisée.pdf", slide: 11 },
+            { cat: "A_VF", id: "A.I.(xiii)", isTrap: true, q: "(xiii) Parmi les modèles de mondialisation, Toyota est l'exemple par excellence d'arbitrage (choix exclusif de l'un ou l'autre) entre intégration mondiale et adaptation locale.", ans: "FAUX (Piège)", tldr: "Toyota est une firme transnationale hybride : elle combine une forte intégration mondiale (TNGA) ET une forte adaptation locale.", pdf: "séance 11 révisée.pdf", slide: 5 },
+            { cat: "A_VF", id: "A.I.(xiv)", isTrap: true, q: "(xiv) Les acquisitions et fusions sont une réponse offensive à l'adhésion à une ZLE, tandis que la R&D en est une réponse défensive.", ans: "FAUX", tldr: "A&F comme R&D peuvent être utilisées à la fois offensivement (conquérir le marché élargi) et défensivement (protéger sa part de marché).", pdf: "séance 11 révisée.pdf", slide: 9 },
+            { cat: "A_VF", id: "A.I.(xv)", isTrap: false, q: "(xv) Les règles d'origine définissent les critères permettant à un produit d'être considéré originaire d'un pays de la ZLE pour bénéficier d'un traitement préférentiel.", ans: "VRAI", tldr: "Elles déterminent l'éligibilité aux droits nuls ou réduits au sein de la zone de libre-échange.", pdf: "séance 11 révisée.pdf", slide: 11 },
+
+            { cat: "A_QCM", id: "A.II.1", isTrap: false, q: "1. Lequel n'est pas un exemple de coût de transaction ? a) Recherche de fournisseurs b) Rédaction/gestion des contrats c) Les salaires d) Tous e) Aucun", ans: "c) Les salaires", tldr: "Les salaires sont des coûts directs de main-d'œuvre/production, contrairement aux coûts de recherche, de contrat ou de litige.", pdf: "Séance 10.pdf", slide: 10 },
+            { cat: "A_QCM", id: "A.II.2", isTrap: false, q: "2. Meilleur moyen de coordination et contrôle d'une entreprise complexe ? a) Marché b) Hiérarchie c) Clan d) Argumentatif e) Combinaison (synergie) optimisée des quatre modes (marché, hiérarchie, clan, savoir).", ans: "e) Synergie des 4 modes", tldr: "La combinaison des quatre modes (marché, hiérarchie, clan, savoir) répond à la complexité organisationnelle.", pdf: "Séance 10.pdf", slide: 15 },
+            { cat: "A_QCM", id: "A.II.3", isTrap: false, q: "3. Quelle(s) affirmation(s) est (sont) vraie(s) sur les marchés internes (biens/services, travail, capital) ? a), b), c) décrites dans le cours, d) Aucune, e) Elles sont toutes vraies.", ans: "e) Elles sont toutes vraies", tldr: "Les trois mécanismes (prix de transfert, rémunération/mobilité interne, rationnement/incitations/prise de contrôle) sont exacts.", pdf: "Séance 10.pdf", slide: 8 },
+            { cat: "A_QCM", id: "A.II.4", isTrap: true, q: "4. Quelle(s) affirmation(s) est (sont) fausse(s) parmi celles des marchés internes ? d) Aucune n'est fausse. e) Elles sont toutes fausses.", ans: "d) Aucune n'est fausse", tldr: "Piège de lecture : les propositions reprennent les caractéristiques valides des trois marchés internes.", pdf: "Séance 10.pdf", slide: 9 },
+            { cat: "A_QCM", id: "A.II.5", isTrap: false, q: "5. Critères RH des gestionnaires mondialisés ? a) Assimilation culturelle b) Adaptabilité/langues c) Salaire global ajusté d) Réinsertion des expatriés e) Toutes ces réponses.", ans: "e) Toutes ces réponses", tldr: "L'adaptation interculturelle, la rémunération ajustée et le suivi des expatriés font partie de la gestion globale.", pdf: "séance 11 révisée.pdf", slide: 14 },
+            { cat: "A_QCM", id: "A.II.6", isTrap: false, q: "6. Quelle initiative ne constitue pas une réponse aux ZLE ? a) A&F b) IDE c) Gestion des filiales d) RSE e) Aucune de ces réponses.", ans: "e) Aucune de ces réponses", tldr: "Toutes ces dimensions figurent parmi les réponses d'entreprises recensées face aux ZLE.", pdf: "séance 11 révisée.pdf", slide: 9 },
+            { cat: "A_QCM", id: "A.II.7", isTrap: false, q: "7. Stratégies les plus indiquées à la naissance puis au déclin ? a) Coûts puis différenciation b) Différenciation puis domination par les coûts.", ans: "b) Différenciation puis coûts", tldr: "Naissance : différenciation/innovation ; déclin : domination par les coûts et réduction des dépenses.", pdf: "Séance 09.pdf", slide: 13 },
+            { cat: "A_QCM", id: "A.II.8", isTrap: false, q: "8. Économies d'échelle (volume) et d'envergure (production jointe) : a) Vraie b) Vraie c) Toutes les deux vraies.", ans: "c) Toutes les deux vraies", tldr: "L'échelle baisse le coût moyen par le volume ; l'envergure le baisse par le partage d'actifs/complémentarité.", pdf: "Séance 09.pdf", slide: 10 },
+
+            { cat: "A_COURTE", id: "A.III.1", isTrap: false, q: "1) Exemple de contrôle de type marché, hiérarchique et culturel/clanique.", ans: "3 exemples types", tldr: "Marché : prix de transfert ou bonus liés aux résultats. Hiérarchique : budgets, règles, supervision directe. Clanique : valeurs partagées, socialisation, normes informelles.", pdf: "Séance 10.pdf", slide: 6 },
+            { cat: "A_COURTE", id: "A.III.2", isTrap: false, q: "2) Traits des marchés internes : (1) biens et services, (2) travail, (3) capital.", ans: "3 marchés internes", tldr: "(1) Divisions autonomes avec prix de transfert ; (2) primes/pièce/tâche, évaluation liée aux résultats, recrutement/promotion ; (3) rationnement du capital, incitations, risque de prise de contrôle.", pdf: "Séance 10.pdf", slide: 8 },
+            { cat: "A_COURTE", id: "A.III.3", isTrap: false, q: "3) En quoi la mondialisation est un levier défensif et offensif ?", ans: "Offensif & défensif", tldr: "Offensif : accès à de nouveaux marchés, économies d'échelle/portée, technologies. Défensif : protéger son marché domestique face aux entrants étrangers ou réduire les coûts.", pdf: "séance 11 révisée.pdf", slide: 3 },
+            { cat: "A_COURTE", id: "A.III.4", isTrap: false, q: "4) Cinq degrés d'intégration économique, bloc le plus intégré et pourquoi ?", ans: "Balassa + UE", tldr: "1) Zone de libre-échange, 2) union douanière, 3) marché commun, 4) union économique et monétaire, 5) union politique. L'UE est la plus intégrée (monnaie unique, institutions supranationales).", pdf: "séance 11 révisée.pdf", slide: 6 },
+            { cat: "A_COURTE", id: "A.III.5", isTrap: false, q: "5) Pourquoi le « bol de spaghetti » africain freine-t-il l'intégration (ZLECAf) ?", ans: "Chevauchement des accords", tldr: "L'appartenance simultanée à plusieurs blocs crée des chevauchements de règles et d'objectifs, rendant l'intégration plus formelle qu'effective.", pdf: "séance 11 révisée.pdf", slide: 7 },
+            { cat: "A_COURTE", id: "A.III.6", isTrap: false, q: "6) Trois exemples de coûts de transaction réguliers.", ans: "3 coûts de transaction", tldr: "Recherche et sélection de fournisseurs, rédaction/négociation/suivi des contrats, résolution des litiges ou contrôle de vulnérabilité.", pdf: "Séance 10.pdf", slide: 10 },
+            { cat: "A_COURTE", id: "A.III.7", isTrap: false, q: "7) Exemple de règle d'origine dans l'ACEUM et dans le CETA.", ans: "RdO ACEUM & CETA", tldr: "ACEUM : seuil de valeur ajoutée régionale (ex. contenu nord-américain en automobile). CETA : changement de classification tarifaire ou transformation suffisante (ex. produits agroalimentaires).", pdf: "séance 11 révisée.pdf", slide: 11 },
+            { cat: "A_COURTE", id: "A.III.8", isTrap: false, q: "8) Facteurs déterminants des coûts de transaction selon Williamson ?", ans: "4 facteurs de Williamson", tldr: "Spécificité des actifs, fréquence des transactions, incertitude entourant la transaction et durée de vie de la transaction.", pdf: "Séance 10.pdf", slide: 11 },
+            { cat: "A_COURTE", id: "A.III.9", isTrap: false, q: "9) Transport aérien : différenciation (i) hausse du prix, (ii) baisse du prix, et baisse du coût moyen.", ans: "Sophistication, épuration & CM", tldr: "(i) Hausse : offre affaires/services supérieurs (sophistication). (ii) Baisse : tarif de base épuré sans options. Le coût moyen baisse par meilleur remplissage (échelle/densité) et partage d'actifs (envergure).", pdf: "Séance 09.pdf", slide: 11 },
+            { cat: "A_COURTE", id: "A.III.10", isTrap: false, q: "10) Pratiques d'Uber ou Airbnb combinant marché, hiérarchie et clan via la plateforme.", ans: "Marché, hiérarchie, clan", tldr: "Marché : tarification dynamique selon l'offre et la demande. Hiérarchie : règles algorithmiques, commissions, sanctions. Clan : notations mutuelles et confiance communautaire.", pdf: "Séance 10.pdf", slide: 6 },
+            { cat: "A_COURTE", id: "A.III.11", isTrap: false, q: "11) Comment la plateforme TNGA de Toyota génère économies d'échelle, d'envergure et d'apprentissage ?", ans: "TNGA : échelle, portée, apprentissage", tldr: "Échelle : châssis et groupes motopropulseurs standardisés sur de grands volumes. Envergure : R&D hybride partagée de la Yaris au RAV4. Apprentissage : diffusion des pratiques TPS/Lean entre usines et fournisseurs.", pdf: "séance 11 révisée.pdf", slide: 15 },
+            { cat: "A_COURTE", id: "A.III.12", isTrap: false, q: "12) Correction du tableau des 5+1 forces de Porter.", ans: "Correspondances exactes", tldr: "Substituts -> rapport qualité/prix ; entrants -> prix non rentable pour entrants ; acheteurs -> réseaux de distribution ; fournisseurs -> sources d'approvisionnement ; pouvoirs publics -> lobbying ; intensité -> innovation.", pdf: "Séance 09.pdf", slide: 14 },
+
+            { cat: "PARTIE_B", id: "B.I.1", isTrap: false, q: "B.I.1 (V/F) Acquisition, fusion, alliance, privatisation, impartition et sous-traitance relèvent des choix d'internalisation et d'externalisation.", ans: "VRAI", tldr: "Ces décisions définissent ce que l'entreprise fait elle-même, fait faire ou co-réalise.", pdf: "Séance 10.pdf", slide: 11 },
+            { cat: "PARTIE_B", id: "B.I.2", isTrap: true, q: "B.I.2 (V/F) Considérant l'entreprise comme un nœud de contrats, la Théorie de la ressource conclut que les bénéfices dépendent des compétences.", ans: "FAUX (Piège)", tldr: "La Théorie de la ressource (Penrose) voit l'entreprise comme un corps de compétences, et non comme un nœud de contrats.", pdf: "Séance 10.pdf", slide: 14 },
+            { cat: "PARTIE_B", id: "B.I.3", isTrap: true, q: "B.I.3 (V/F) Hausse des coûts de transaction et économies d'échelle poussent à externaliser ; hausse des coûts de complexité pousse aux A&F.", ans: "FAUX (Piège)", tldr: "C'est l'inverse : coûts de transaction élevés + économies d'échelle/portée favorisent l'internalisation/A&F, tandis que la complexité interne pousse à externaliser.", pdf: "Séance 10.pdf", slide: 11 },
+            { cat: "PARTIE_B", id: "B.II.1", isTrap: false, q: "B.II.1 (QCM) Balance coûts de transaction externes vs coûts de complexité : a) Coûts transaction/échelle -> A&F ; complexité -> externalisation.", ans: "a) Réponse exacte", tldr: "L'arbitrage compare les coûts externes de marché aux coûts internes de complexité et de mandat.", pdf: "Séance 10.pdf", slide: 11 },
+            { cat: "PARTIE_B", id: "B.II.2", isTrap: false, q: "B.II.2 (QCM) Préoccupations des autorités face aux A&F/externalisation : a) recentrages, b) pertes fiscales, c) pertes d'emplois, d) toutes vraies.", ans: "d) Toutes ces réponses sont vraies", tldr: "Les régulateurs surveillent l'emploi, les recettes fiscales et la restructuration des chaînes de valeur.", pdf: "séance 11 révisée.pdf", slide: 8 },
+            { cat: "PARTIE_B", id: "B.III.1", isTrap: false, q: "B.III.1 (Courte) Quatre raisons de préférer l'alliance stratégique aux A&F à l'étranger quand coûts de transaction et de complexité sont élevés ?", ans: "4 raisons clés", tldr: "1) Réduire l'exposition financière face à l'incertitude locale ; 2) éviter les coûts d'intégration et chocs culturels d'une fusion ; 3) limiter les coûts de contrôle à distance ; 4) accéder aux connaissances et réseaux d'un partenaire local.", pdf: "séance 11 révisée.pdf", slide: 15 },
+            { cat: "PARTIE_B", id: "B.III.2", isTrap: false, q: "B.III.2 (Courte) Différence entre impartition, sous-traitance et délocalisation, avec exemple.", ans: "3 notions distinctes", tldr: "Impartition : transfert d'une fonction/service interne (ex. TI/paie). Sous-traitance : fabrication/exécution selon spécifications (ex. pièces). Délocalisation : transfert géographique à l'étranger (ex. usine délocalisée).", pdf: "Séance 10.pdf", slide: 11 },
+            { cat: "PARTIE_B", id: "B.III.3", isTrap: false, q: "B.III.3 (Courte) Paradoxe en maximisation du profit : acquérir des firmes tout en fermant des divisions et en impartissant RH/Finances/TI.", ans: "Recentrer sur le cœur de compétence", tldr: "L'entreprise cherche à maximiser RT - CT en réduisant les coûts de complexité/mandat via l'impartition et la fermeture d'unités peu rentables, tout en acquérant des actifs stratégiques pour renforcer ses compétences clés et économies d'échelle.", pdf: "Séance 10.pdf", slide: 14 }
+        ];
+
+        
+
+/* ================== Séances 9 à 12 : logique ================== */
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const findSlide=(pdf,n)=>(slidesDB[pdf]||[]).find(s=>s.slide===n);
+
+/* Citations séance 11 */
+$('#quotes-s11').innerHTML=slidesDB['séance 11 révisée.pdf'].map(s=>'<p><strong>'+esc(s.title)+'</strong><br><span style="color:var(--muted)">'+esc(s.quote)+'</span></p>').join('');
+
+/* Balassa */
+(function(){
+  const steps=[
+    ['Zone de libre-échange','Libre circulation des biens et services entre les pays membres. Chaque pays garde son propre tarif vers l\'extérieur, donc les règles d\'origine comptent. Exemples : ACEUM, CETA.'],
+    ['Union douanière','Zone de libre-échange + un tarif extérieur commun envers les pays tiers. Exemple : MERCOSUR.'],
+    ['Marché commun','Union douanière + libre circulation des facteurs : biens, services, capitaux, personnes.'],
+    ['Union économique et monétaire','Marché commun + coordination des politiques économiques et monnaie unique.'],
+    ['Union politique','Supranationalité : des institutions au-dessus des États. L\'Union européenne en est presque une.']
+  ];
+  const wrap=$('#bal-steps'), box=$('#bal-box');
+  function show(i){
+    $$('button',wrap).forEach(b=>b.classList.toggle('primary',+b.dataset.i===i));
+    box.innerHTML='<span class="eyebrow">Degré '+(i+1)+' sur 5</span><h3 style="margin-top:6px">'+steps[i][0]+'</h3><p style="margin:.3em 0 0">'+steps[i][1]+'</p>';
+  }
+  [4,3,2,1,0].forEach(i=>{
+    const b=document.createElement('button');
+    b.dataset.i=i; b.style.textAlign='left';
+    b.innerHTML='<strong>'+(i+1)+'.</strong> '+steps[i][0];
+    b.addEventListener('click',()=>show(i));
+    wrap.appendChild(b);
+  });
+  show(0);
+})();
+
+/* Simulateur de frontières */
+(function(){
+  const ext=$('#w-ext'), int=$('#w-int');
+  function upd(){
+    const e=+ext.value, i=+int.value;
+    $('#w-ext-val').textContent=e+' %'; $('#w-int-val').textContent=i+' %';
+    const badge=$('#w-badge'), title=$('#w-title'), desc=$('#w-desc');
+    badge.className='pill';
+    if(e-i>18){badge.classList.add('g');badge.textContent='Faire soi-même ou acquérir';title.textContent='Internalisation, acquisition ou fusion';desc.textContent='Le marché coûte trop cher (actifs spécifiques, risque d\'opportunisme) : on internalise pour réduire les coûts de marché.'}
+    else if(i-e>18){badge.classList.add('o');badge.textContent='Faire faire';title.textContent='Impartition, sous-traitance ou cession';desc.textContent='La complexité et les coûts de mandat dominent : externaliser allège la gestion interne.'}
+    else{badge.textContent='Co-faire';title.textContent='Alliance stratégique ou partenariat';desc.textContent='Les deux coûts sont élevés : une alliance encadrée partage les risques sans la lourdeur d\'une fusion.'}
+  }
+  ext.addEventListener('input',upd);int.addEventListener('input',upd);upd();
+})();
+
+/* Joutes de Porter */
+(function(){
+  const P={
+    rivalite:['Rivalité entre concurrents','Capacité d\'innovation','On se démarque par l\'innovation et la différenciation.',14],
+    entrants:['Menace de nouveaux entrants','Fixer un prix non rentable pour les entrants','Un prix dissuasif ou des barrières rendent l\'entrée peu attrayante.',14],
+    substituts:['Pression des substituts','Améliorer le rapport qualité/prix','Un meilleur rapport qualité/prix retient les clients.',14],
+    acheteurs:['Pouvoir des acheteurs','Multiplier les réseaux de distribution','Diversifier les canaux réduit la dépendance envers un acheteur.',14],
+    fournisseurs:['Pouvoir des fournisseurs','Multiplier les sources d\'approvisionnement','Plus de fournisseurs, moins de pouvoir d\'imposer ses prix.',14],
+    publics:['Rôle des pouvoirs publics (+1)','Capacité de lobbying','Suivre la réglementation et pouvoir l\'influencer.',14],
+    techno:['Changements technologiques (+1)','Veille technologique et R&D','Les mutations changent les coûts, les barrières et les chaînes de valeur.',3]
+  };
+  const btns=$('#porter-btns'), card=$('#porter-card');
+  function show(k){
+    const [t,a,x,n]=P[k];
+    $$('button',btns).forEach(b=>b.classList.toggle('primary',b.dataset.k===k));
+    card.innerHTML='<span class="eyebrow">'+t+'</span><h3 style="margin:6px 0">Réponse : '+a+'</h3><p style="margin:.3em 0">'+x+'</p><small class="eyebrow">Séance 09.pdf · acétate '+n+'</small>';
+  }
+  Object.keys(P).forEach(k=>{const b=document.createElement('button');b.dataset.k=k;b.textContent=P[k][0].replace(/ \(\+1\)/,' (+1)');b.addEventListener('click',()=>show(k));btns.appendChild(b)});
+  show('rivalite');
+})();
+
+
+const NOTES={
+ 'A.III.6':"Cette question porte sur ton étude de cas. La réponse ci-dessus est un exemple général, pas une réponse de l'acétate.",
+ 'A.III.7':"Cette question porte sur ton étude de cas. Les exemples de règles d'origine viennent de ma synthèse, pas de l'acétate. Les 5 types de règles sont à l'acétate 11.",
+ 'A.III.9':"Les exemples (affaires, tarif de base épuré, remplissage) viennent de ma synthèse. Le cours donne seulement les définitions de différenciation vers le haut et vers le bas (acétate 11 de la séance 9).",
+ 'A.III.10':"Les exemples Uber / Airbnb viennent de ma synthèse, pas des acétates.",
+ 'A.I.(xiv)':"Le raisonnement vient de la page de départ, pas d'un acétate. L'acétate 9 liste simplement les A&F et la R&D parmi les réponses des entreprises aux zones de libre-échange.",
+ 'B.II.2':"Source à vérifier : je n'ai pas trouvé cette question dans les acétates fournis. La séance 12 n'est pas dans tes documents.",
+ 'B.III.1':"Source à vérifier : la séance 12 n'est pas dans tes documents. Le lien le plus proche est l'annexe I-1 de la séance 11 (alliances encadrées de Toyota pour partager les investissements tout en limitant l'opportunisme).",
+ 'B.III.2':"Source à vérifier : la séance 12 (sous-traitance, externalisation, délocalisation) n'est pas dans tes documents.",
+ 'B.III.3':"Source à vérifier : raisonnement de synthèse, tiré de la séance 10 (coûts de complexité et de mandat)."
+};
+/* Exercices */
+(function(){
+  const CATS=[['A_VF','A.I Vrai ou faux'],['A_QCM','A.II Choix multiple'],['A_COURTE','A.III Réponses courtes'],['PARTIE_B','Partie B']];
+  let cur='A_VF', traps=false, all=false;
+  let mastered=new Set(store.get('ecn-mastered',[]));
+  const tabs=$('#ex-tabs'), list=$('#ex-list');
+  CATS.forEach(([k,l])=>{const b=document.createElement('button');b.dataset.k=k;b.textContent=l;b.addEventListener('click',()=>{cur=k;render()});tabs.appendChild(b)});
+  $('#trap-btn').addEventListener('click',()=>{traps=!traps;render()});
+  $('#reveal-btn').addEventListener('click',()=>{all=!all;render()});
+  function mastery(){
+    const p=Math.round(mastered.size/exercisesData.length*100);
+    $('#mastery-pct').textContent=p+' %'; $('#mastery-bar').style.width=p+'%';
+    $('#mastery-txt').textContent=mastered.size+' sur '+exercisesData.length;
+    store.set('ecn-mastered',[...mastered]);
+  }
+  function render(){
+    $$('button',tabs).forEach(b=>b.classList.toggle('primary',b.dataset.k===cur));
+    $('#trap-btn').textContent="Pièges d'examen : "+(traps?'activé':'désactivé');
+    $('#trap-btn').classList.toggle('primary',traps);
+    $('#reveal-btn').textContent=all?'Tout masquer':'Tout afficher';
+    const items=exercisesData.filter(x=>x.cat===cur&&(!traps||x.isTrap));
+    if(!items.length){list.innerHTML='<div class="sheet flat">Aucun piège dans cette section. Désactive le filtre pour voir toutes les questions.</div>';mastery();return}
+    list.innerHTML='';
+    items.forEach(it=>{
+      const sl=findSlide(it.pdf,it.slide);
+      const d=document.createElement('div');d.className='sheet';
+      d.innerHTML='<div class="row"><span class="pill">'+esc(it.id)+'</span>'+(it.isTrap?'<span class="pill o">Piège</span>':'')+(mastered.has(it.id)?'<span class="pill g">Maîtrisé</span>':'')+'</div>'+
+        '<p>'+esc(it.q)+'</p>'+
+        '<button data-rev>'+(all?'Masquer la réponse':'Voir la réponse')+'</button>'+
+        '<div data-ans '+(all?'':'hidden')+'><div class="why"><strong>'+esc(it.ans)+'</strong><br>'+esc(it.tldr)+'</div>'+
+        '<p class="eyebrow" style="margin:10px 0 0">Source : '+esc(it.pdf)+' · acétate '+it.slide+'</p>'+(NOTES[it.id]?'<p class="sheet flat" style="margin:10px 0;padding:10px 14px"><strong>À savoir :</strong> '+esc(NOTES[it.id])+'</p>':'')+
+        (sl?'<details class="more"><summary>Citation du cours</summary><div class="body">'+esc(sl.quote)+'</div></details>':'')+
+        '<label class="check"><input type="checkbox" '+(mastered.has(it.id)?'checked':'')+'><span>Je maîtrise cette question</span></label></div>';
+      $('[data-rev]',d).addEventListener('click',e=>{const a=$('[data-ans]',d);a.hidden=!a.hidden;e.target.textContent=a.hidden?'Voir la réponse':'Masquer la réponse'});
+      $('input',d).addEventListener('change',e=>{e.target.checked?mastered.add(it.id):mastered.delete(it.id);mastery();$$('.pill.g',d).forEach(p=>p.remove());if(e.target.checked){const p=document.createElement('span');p.className='pill g';p.textContent='Maîtrisé';$('.row',d).appendChild(p)}});
+      list.appendChild(d);
+    });
+    mastery();
+  }
+  render();
+})();
+
+/* Index des sources */
+(function(){
+  const docs=Object.keys(slidesDB); let cur=docs[0];
+  const tabs=$('#src-tabs'), list=$('#src-list');
+  docs.forEach(d=>{const b=document.createElement('button');b.dataset.k=d;b.textContent=d.replace('.pdf','');b.addEventListener('click',()=>{cur=d;render()});tabs.appendChild(b)});
+  function render(){
+    $$('button',tabs).forEach(b=>b.classList.toggle('primary',b.dataset.k===cur));
+    list.innerHTML=slidesDB[cur].map(s=>'<details><summary>'+esc(s.title)+'</summary><div class="body"><p><strong>'+esc(s.tldr)+'</strong></p><p style="color:var(--muted)">'+esc(s.quote)+'</p></div></details>').join('');
+  }
+  render();
+})();
+
+/* Notes */
+(function(){
+  let notes=store.get('ecn-notes',[]);
+  const list=$('#note-list'), msg=$('#note-msg');
+  function render(){
+    list.innerHTML=notes.map((n,i)=>'<div class="sheet"><h3>'+esc(n.t)+'</h3><p style="white-space:pre-wrap">'+esc(n.x)+'</p><button data-del="'+i+'">Supprimer</button></div>').join('');
+    $$('[data-del]',list).forEach(b=>b.addEventListener('click',()=>{notes.splice(+b.dataset.del,1);store.set('ecn-notes',notes);render()}));
+  }
+  $('#note-save').addEventListener('click',()=>{
+    const t=$('#note-title').value.trim()||'Sans titre', x=$('#note-text').value.trim();
+    if(!x){msg.textContent='Colle un texte avant d\'enregistrer.';return}
+    notes.unshift({t,x});store.set('ecn-notes',notes);
+    $('#note-title').value='';$('#note-text').value='';msg.textContent='Fiche enregistrée.';render();
+  });
+  render();
+})();
+
+refreshProgress();
+</script>
+</body>
+</html>
